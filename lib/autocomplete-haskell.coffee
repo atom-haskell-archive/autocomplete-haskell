@@ -23,13 +23,11 @@ module.exports = AutocompleteHaskell =
 
     if prefix=='_'
       controller=editor.haskellGhcModController
-      return unless controller
+      return [] unless controller
       searchPromise= new Promise (resolve,reject) =>
         controller.getTypeCallback (range,type,crange)=>
           if type!='???'
-            search=':: '+type
-            search=search.replace /[\w.]+\.[\w.]+/g,'_'
-            resolve(search)
+            resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
           else
             reject(Error('err'))
     else
@@ -42,8 +40,11 @@ module.exports = AutocompleteHaskell =
         regex2.exec(item)[1]
       '+'+modules.join(' +')+' '+search
     ).then (search) ->
-        new Promise (resolve) ->
+        new Promise (resolve,reject) ->
           CP.execFile 'hoogle',[search], {}, (error,data) ->
+            if error
+              reject(error)
+              return
             resolve (data.split('\n')
               .slice(0,10)
               .filter (line) =>
