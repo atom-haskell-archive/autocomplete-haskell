@@ -1,9 +1,15 @@
 CP = require('child_process')
 
 module.exports = AutocompleteHaskell =
-  editorSubscription: null
-  providers: []
-  autocomplete: null
+  config:
+      trimTypeTo:
+        type: 'string'
+        default: '50'
+        description: 'Trim long types to this number of characters'
+      hooglePath:
+        type: 'string'
+        default: 'hoogle'
+        description: 'Path to hoogle executable'
 
   activate: ->
     provider =
@@ -40,8 +46,9 @@ module.exports = AutocompleteHaskell =
         regex2.exec(item)[1]
       '+'+modules.join(' +')+' '+search
     ).then (search) ->
+        hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
         new Promise (resolve,reject) ->
-          CP.execFile 'hoogle',[search], {}, (error,data) ->
+          CP.execFile hooglePath,[search], {}, (error,data) ->
             if error
               reject(error)
               return
@@ -53,7 +60,8 @@ module.exports = AutocompleteHaskell =
                 line=line.slice(line.indexOf(' ')+1)
                 [name,type]=line.split('::').map (line) ->
                   line.trim()
-                type=type.slice(0,@trimTypeTo)+'...' if type.length>@trimTypeTo
+                trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
+                type=type.slice(0,trimTypeTo)+'...' if type.length>trimTypeTo
                 {
                   word: name
                   label: type
