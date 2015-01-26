@@ -19,7 +19,7 @@ module.exports = AutocompleteHaskell =
       # dispose: ->
         # Your dispose logic here
     @registration = atom.services.provide  'autocomplete.provider',
-     '0.1.0',
+     '1.0.0',
      provider:provider
 
   deactivate: ->
