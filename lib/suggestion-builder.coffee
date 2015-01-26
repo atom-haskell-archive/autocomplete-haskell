@@ -1,55 +1,124 @@
 CP = require('child_process')
 module.exports=
 class SuggestionBuilder
+  typeScope: 'meta.function.type-declaration.haskell'
+  sourceScope: 'source.haskell'
+  moduleScope: 'support.other.module.haskell'
+
   constructor: (@options) ->
+    @editor = @options.editor
+    @prefix = @options.prefix
+    @scopes = @options.scope.scopes
+    @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
+    @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
 
-  searchPromise: (editor,prefix) ->
+  addModules: (search) =>
+    regex=/^import\s+(?:qualified\s+)?([\w.]+)/gm
+    regex2=new RegExp(regex.source,"")
+    modules=@editor.getText().match(regex).map (item) ->
+      regex2.exec(item)[1]
+    '+'+modules.join(' +')+' '+search
 
-  getSuggestions: ->
-    editor = @options.editor
-    prefix = @options.prefix
-    scopes = @options.scope.scopes
-
-    if (scopes.some (scope) -> scope!='source.haskell')
-      return [] # TODO: modules and types shoul also be a-c'd
-
-    if prefix=='_'
-      controller=editor.haskellGhcModController
+  genSearch: =>
+    if @prefix=='_'
+      controller=@editor.haskellGhcModController
       return [] unless controller
-      searchPromise= new Promise (resolve,reject) =>
-        controller.getTypeCallback (range,type,crange)=>
+      new Promise (resolve,reject) ->
+        controller.getTypeCallback (range,type,crange)->
           if type!='???'
             resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
           else
             reject(Error('err'))
     else
-      searchPromise= Promise.resolve(prefix)
+      @search()
 
-    searchPromise.then((search) ->
-      regex=/^import\s+(?:qualified\s+)?([\w.]+)/gm
-      regex2=new RegExp(regex.source,"")
-      modules=editor.getText().match(regex).map (item) ->
-        regex2.exec(item)[1]
-      '+'+modules.join(' +')+' '+search
-    ).then (search) ->
-        hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
-        new Promise (resolve,reject) ->
-          CP.execFile hooglePath,[search], {}, (error,data) ->
-            if error
-              reject(error)
-              return
-            resolve (data.split('\n')
-              .slice(0,10)
-              .filter (line) =>
-                line.contains('::')
-              .map (line) =>
-                line=line.slice(line.indexOf(' ')+1)
-                [name,type]=line.split('::').map (line) ->
-                  line.trim()
-                trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
-                type=type.slice(0,trimTypeTo)+'...' if type.length>trimTypeTo
-                {
-                  word: name
-                  label: type
-                  prefix: prefix
-                })
+  search: =>
+    Promise.resolve(@prefix)
+
+  searchHoogle: (search) =>
+    new Promise (resolve,reject) =>
+      CP.execFile @hooglePath,[search], {}, (error,data) ->
+        if error
+          reject(error)
+          return
+        resolve data.split('\n')
+
+  trim: (label) =>
+    if label.length>@trimTypeTo
+      label.slice(0,@trimTypeTo)+'...'
+    else
+      label
+
+  getFirstClass: (data) =>
+    console.log(@scopes)
+    data
+      .filter (line) ->
+        line.contains('::')
+      .map (line) =>
+        line=line.slice(line.indexOf(' ')+1)
+        [name,type]=line.split('::').map (line) ->
+          line.trim()
+        type=type.slice(0,@trimTypeTo)+'...' if type.length>@trimTypeTo
+        {
+          word: name
+          label: type
+          prefix: @prefix
+        }
+
+  getType: (data) =>
+    data
+      .filter (line) ->
+        line.contains('data') ||
+          line.contains('type') ||
+          line.contains('newtype')
+      .map (line) =>
+        label=line
+        line=line.slice(line.indexOf(' ')+1)
+        line=line.slice(line.indexOf(' ')+1)
+        name=line.slice(0,line.indexOf(' '))
+        {
+          word: name
+          label: @trim label
+          prefix: @prefix
+        }
+  getModule: (data) =>
+    data
+      .filter (line) ->
+        line.contains('module')
+      .map (line) =>
+        label='module'
+        line=line.slice(line.indexOf(' ')+1)
+        line=line.slice(line.indexOf(' ')+1)
+        name=line
+        {
+          word: name
+          label: @trim label
+          prefix: @prefix
+        }
+
+  replaceModuleName: (search) ->
+    search.replace('_','.')
+
+  getSuggestions: =>
+    if !(@scopes.some (scope) => scope!=@sourceScope)
+      console.log('sourceScope')
+      @genSearch()
+        .then(@addModules)
+        .then(@searchHoogle)
+        .then(@getFirstClass)
+    else if (@scopes.some (scope) => scope==@typeScope)
+      console.log('typeScope')
+      @search()
+        .then(@addModules)
+        .then(@searchHoogle)
+        .then(@getType)
+    else if (@scopes.some (scope) => scope==@moduleScope)
+      console.log('moduleScope')
+      @search()
+        .then(@replaceModuleName)
+        .then(@searchHoogle)
+        .then(@getModule)
+    else
+      console.log('unkScope')
+      console.log(@scopes)
+      []
