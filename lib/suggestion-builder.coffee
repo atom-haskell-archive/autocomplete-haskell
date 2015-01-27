@@ -80,7 +80,7 @@ class SuggestionBuilder
         line.startsWith prefix
       .map (mod) ->
         word: mod
-        label: 'preprocessor'
+        label: 'module'
         prefix: prefix
 
   getPreprocessor: (prefix) =>
