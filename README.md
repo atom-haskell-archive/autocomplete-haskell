@@ -8,6 +8,6 @@ If you also install [Hoogle][3], you can also show auto-completions for hole `_`
 [2]: https://atom.io/packages/haskell-ghc-mod
 [3]: https://www.haskell.org/hoogle
 [4]: http://www.mew.org/~kazu/proj/ghc-mod/en/
-[2]: https://atom.io/packages/language-haskell
+[5]: https://atom.io/packages/language-haskell
 
 ![A screenshot of your package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
