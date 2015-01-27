@@ -25,6 +25,14 @@ class SuggestionBuilder
   addModules: (search) =>
     '+'+@getBufferModules().join(' +')+' '+search
 
+  browseModules: =>
+    new Promise (resolve,reject) =>
+      services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
+        cr=@options.cursor.getCurrentWordBufferRange()
+        gm.browse @getBufferModules(),(data)=>
+          services.dispose()
+          resolve(@info.preludeMods.concat(data))
+
   genTypeSearch: =>
     new Promise (resolve,reject) =>
       services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
@@ -36,9 +44,6 @@ class SuggestionBuilder
           else
             reject(Error('err'))
 
-  search: =>
-    Promise.resolve(@prefix)
-
   searchHoogle: (search) =>
     new Promise (resolve,reject) =>
       CP.execFile @hooglePath,[search], {}, (error,data) ->
@@ -48,6 +53,7 @@ class SuggestionBuilder
         resolve data.split('\n')
 
   trim: (label) =>
+    return unless label
     if label.length>@trimTypeTo
       label.slice(0,@trimTypeTo)+'...'
     else
@@ -62,27 +68,9 @@ class SuggestionBuilder
         line=line.slice(line.indexOf(' ')+1)
         [name,type]=line.split('::').map (line) ->
           line.trim()
-        type=type.slice(0,@trimTypeTo)+'...' if type.length>@trimTypeTo
         {
           word: name
-          label: type
-          prefix: @prefix
-        }
-
-  getType: (data) =>
-    data
-      .filter (line) ->
-        line.contains('data') ||
-          line.contains('type') ||
-          line.contains('newtype')
-      .map (line) =>
-        label=line
-        line=line.slice(line.indexOf(' ')+1)
-        line=line.slice(line.indexOf(' ')+1)
-        name=line.slice(0,line.indexOf(' '))
-        {
-          word: name
-          label: @trim label
+          label: @trim type
           prefix: @prefix
         }
 
@@ -116,14 +104,23 @@ class SuggestionBuilder
         resolve(matchText)
         stop()
 
+  getMatches: (symbols) =>
+    symbols
+      .filter (s) =>
+        s.startsWith(@prefix)
+      .map (s) ->
+        s.split('::')
+      .map (s) =>
+        word: s[0].trim()
+        label: @trim s[1]?.trim()
+        prefix: @prefix
+
   getSuggestions: =>
     if @isIn(@typeScope)
       console.log('typeScope')
-      #TODO: use ghc-mod, need to latch on to editor for this
-      @search()
-        .then(@addModules)
-        .then(@searchHoogle)
-        .then(@getType)
+      #TODO: cache, latch on to editor for this
+      @browseModules()
+        .then(@getMatches)
     else if @isIn(@moduleScope)
       console.log('moduleScope')
       @genSpaceSearch()
@@ -141,11 +138,9 @@ class SuggestionBuilder
           .then(@searchHoogle)
           .then(@getFirstClass)
       else
-      #TODO: use ghc-mod, need to latch on to editor for this
-        @search()
-          .then(@addModules)
-          .then(@searchHoogle)
-          .then(@getFirstClass)
+      #TODO: cache, latch on to editor for this
+        @browseModules()
+          .then(@getMatches)
     else
       console.log('unkScope')
       console.log(@scopes)

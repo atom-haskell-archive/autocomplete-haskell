@@ -34,7 +34,7 @@ class AutocompleteHaskell
       gm.list (res) => @info.moduleList=res
       gm.lang (res) => @info.langOpts=res
       gm.flag (res) => @info.ghcFlags=res
-      gm.browse "Prelude", (res) =>
+      gm.browse ["Prelude"], (res) =>
         @info.preludeMods=res
 
   destroy: ->
