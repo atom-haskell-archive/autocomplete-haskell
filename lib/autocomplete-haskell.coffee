@@ -1,4 +1,5 @@
 SuggestionBuilder = require './suggestion-builder'
+EditorController = require './editor-controller'
 
 module.exports =
 class AutocompleteHaskell
@@ -30,16 +31,19 @@ class AutocompleteHaskell
 
   constructor: ->
     @info = {}
-    @services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
+    @editorMap = new WeakMap
+    atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
       gm.list (res) => @info.moduleList=res
       gm.lang (res) => @info.langOpts=res
       gm.flag (res) => @info.ghcFlags=res
       gm.browse ["Prelude"], (res) =>
-        @info.preludeMods=res
+        @info.preludeSymbs=res
+    @observers=atom.workspace.observeTextEditors (editor) =>
+      @editorMap.set editor, new EditorController(editor)
 
   destroy: ->
-    @services.dispose()
+    @observers.dispose()
+    @editorMap = null
 
   buildSuggestions: (options) =>
-    sb=new SuggestionBuilder(options,@info)
-    sb.getSuggestions()
+    @editorMap.get(options.editor).getSuggestions options,@info

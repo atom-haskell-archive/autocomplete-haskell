@@ -8,36 +8,21 @@ class SuggestionBuilder
   preprocessorScope: 'meta.preprocessor.haskell'
   exportsScope: 'meta.declaration.exports.haskell'
 
-  constructor: (@options,@info) ->
+  constructor: (@options,@info,@controller) ->
     @editor = @options.editor
     @prefix = @options.prefix
     @scopes = @options.scope.scopes
+    @symbols = @info.preludeSymbs.concat @controller.symbols
     @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
     @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
-
-  getBufferModules: =>
-    modules=[]
-    regex=/^import\s+(?:qualified\s+)?([\w.]+)/gm
-    r = @editor.getBuffer().getRange()
-    @editor.backwardsScanInBufferRange regex, r, ({match}) ->
-      modules.push(match[1])
-    modules
 
   addModules: (search) =>
     '+'+@getBufferModules().join(' +')+' '+search
 
-  browseModules: =>
-    new Promise (resolve,reject) =>
-      services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
-        services.dispose()
-        gm.browse @getBufferModules(),(data)=>
-          resolve(@info.preludeMods.concat(data))
-
   genTypeSearch: =>
     new Promise (resolve,reject) =>
-      services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
+      atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
         cr=@options.cursor.getCurrentWordBufferRange()
-        services.dispose()
         gm.type @editor.getText(),cr,(range,type,crange)->
           if type!='???'
             resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
@@ -118,9 +103,7 @@ class SuggestionBuilder
   getSuggestions: =>
     if @isIn(@typeScope)
       console.log('typeScope')
-      #TODO: cache, latch on to editor for this
-      @browseModules()
-        .then(@getMatches)
+      @getMatches @symbols
     else if @isIn(@moduleScope)
       console.log('moduleScope')
       @genSpaceSearch()
@@ -138,9 +121,7 @@ class SuggestionBuilder
           .then(@searchHoogle)
           .then(@getFirstClass)
       else
-      #TODO: cache, latch on to editor for this
-        @browseModules()
-          .then(@getMatches)
+        @getMatches @symbols
     else
       console.log('unkScope')
       console.log(@scopes)
