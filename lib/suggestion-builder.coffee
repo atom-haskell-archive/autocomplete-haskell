@@ -6,6 +6,7 @@ class SuggestionBuilder
   sourceScope: 'source.haskell'
   moduleScope: 'support.other.module.haskell'
   preprocessorScope: 'meta.preprocessor.haskell'
+  exportsScope: 'meta.declaration.exports.haskell'
 
   constructor: (@options,@info) ->
     @editor = @options.editor
@@ -28,17 +29,16 @@ class SuggestionBuilder
   browseModules: =>
     new Promise (resolve,reject) =>
       services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
-        cr=@options.cursor.getCurrentWordBufferRange()
+        services.dispose()
         gm.browse @getBufferModules(),(data)=>
-          services.dispose()
           resolve(@info.preludeMods.concat(data))
 
   genTypeSearch: =>
     new Promise (resolve,reject) =>
       services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
         cr=@options.cursor.getCurrentWordBufferRange()
+        services.dispose()
         gm.type @editor.getText(),cr,(range,type,crange)->
-          services.dispose()
           if type!='???'
             resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
           else
