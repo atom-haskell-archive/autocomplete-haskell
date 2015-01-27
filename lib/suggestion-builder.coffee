@@ -90,7 +90,7 @@ class SuggestionBuilder
         line.startsWith prefix
       .map (mod) ->
         word: mod
-        label: 'preprocessor'
+        label: if prefix[0]=='-' then 'ghc flag' else 'Language'
         prefix: prefix
 
   isIn: (scope) ->
