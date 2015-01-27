@@ -39,11 +39,14 @@ class AutocompleteHaskell
       gm.browse ["Prelude"], (res) =>
         @info.preludeSymbs=res
     @observers=atom.workspace.observeTextEditors (editor) =>
+      return unless editor.getGrammar().scopeName=="source.haskell"
       @editorMap.set editor, new EditorController(editor)
 
   destroy: ->
     @observers.dispose()
-    @editorMap = null
+    for editor in atom.workspace.getEditors()
+      @editorMap.get(editor)?.desrtoy()
+      @editorMap.delete(editor)
 
   buildSuggestions: (options) =>
     @editorMap.get(options.editor).getSuggestions options,@info
