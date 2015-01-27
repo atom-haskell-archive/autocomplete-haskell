@@ -18,7 +18,7 @@ class SuggestionBuilder
     @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
 
   addModules: (search) =>
-    '+'+@getBufferModules().join(' +')+' '+search
+    '+'+@controller.modules.join(' +')+' '+search
 
   genTypeSearch: =>
     new Promise (resolve,reject) =>
