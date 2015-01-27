@@ -1,4 +1,3 @@
-SuggestionBuilder = require './suggestion-builder'
 EditorController = require './editor-controller'
 
 module.exports =
@@ -49,4 +48,4 @@ class AutocompleteHaskell
       @editorMap.delete(editor)
 
   buildSuggestions: (options) =>
-    @editorMap.get(options.editor).getSuggestions options,@info
+    @editorMap.get(options.editor)?.getSuggestions options,@info

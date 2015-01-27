@@ -1,5 +1,6 @@
 _ = require 'underscore-plus'
 {CompositeDisposable} = require 'atom'
+SuggestionBuilder = require './suggestion-builder'
 
 module.exports=
 class EditorController
