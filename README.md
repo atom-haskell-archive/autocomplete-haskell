@@ -27,4 +27,4 @@ default autocomplete-plus fuzzy completions.
 [4]: http://www.mew.org/~kazu/proj/ghc-mod/en/
 [5]: https://atom.io/packages/language-haskell
 
-![A screenshot of your package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
+![Screencast](https://raw.githubusercontent.com/lierdakil/autocomplete-haskell/master/screencast.gif)
