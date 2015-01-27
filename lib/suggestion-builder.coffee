@@ -46,7 +46,6 @@ class SuggestionBuilder
       label
 
   getFirstClass: (data) =>
-    console.log(@scopes)
     data
       .filter (line) ->
         line.contains('::')
@@ -103,19 +102,15 @@ class SuggestionBuilder
 
   getSuggestions: =>
     if @isIn(@typeScope)
-      console.log('typeScope')
       @getMatches @symbols
     else if @isIn(@moduleScope)
-      console.log('moduleScope')
       @genSpaceSearch()
         .then(@getModule)
     else if @isIn(@preprocessorScope)
-      console.log('preprocessorScope')
       @genSpaceSearch()
         .then(@getPreprocessor)
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
-      console.log('sourceScope')
       if(@prefix=='_')
         @genTypeSearch()
           .then(@addModules)
@@ -124,6 +119,4 @@ class SuggestionBuilder
       else
         @getMatches @symbols
     else
-      console.log('unkScope')
-      console.log(@scopes)
       []
