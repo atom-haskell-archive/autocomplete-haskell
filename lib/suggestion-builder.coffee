@@ -7,6 +7,7 @@ class SuggestionBuilder
   moduleScope: 'support.other.module.haskell'
   preprocessorScope: 'meta.preprocessor.haskell'
   exportsScope: 'meta.declaration.exports.haskell'
+  #TODO: exports scope
 
   constructor: (@options,@info,@controller) ->
     @editor = @options.editor
