@@ -1,9 +1,11 @@
 CP = require('child_process')
+{Range} = require 'atom'
 module.exports=
 class SuggestionBuilder
   typeScope: 'meta.function.type-declaration.haskell'
   sourceScope: 'source.haskell'
   moduleScope: 'support.other.module.haskell'
+  preprocessorScope: 'meta.preprocessor.haskell'
 
   constructor: (@options,@info) ->
     @editor = @options.editor
@@ -83,26 +85,36 @@ class SuggestionBuilder
           label: @trim label
           prefix: @prefix
         }
-  getModule: (data) =>
-    data
-      .filter (line) ->
-        line.contains('module')
-      .map (line) =>
-        label='module'
-        line=line.slice(line.indexOf(' ')+1)
-        line=line.slice(line.indexOf(' ')+1)
-        name=line
-        {
-          word: name
-          label: @trim label
-          prefix: @prefix
-        }
 
-  replaceModuleName: (search) ->
-    search.replace('_','.')
+  getModule: (prefix) =>
+    @info.moduleList
+      .filter (line) ->
+        line.startsWith prefix
+      .map (mod) ->
+        word: mod
+        label: 'preprocessor'
+        prefix: prefix
+
+  getPreprocessor: (prefix) =>
+    (if prefix[0]=='-' then @info.ghcFlags
+    else @info.langOpts)
+      .filter (line) ->
+        line.startsWith prefix
+      .map (mod) ->
+        word: mod
+        label: 'preprocessor'
+        prefix: prefix
 
   isIn: (scope) ->
     @scopes.some (s) -> s==scope
+
+  genSpaceSearch: =>
+    r = new Range @options.cursor.getCurrentLineBufferRange().start,
+      @options.position
+    new Promise (resolve) =>
+      @editor.backwardsScanInBufferRange /[^\s]+/, r, ({matchText,stop})->
+        resolve(matchText)
+        stop()
 
   getSuggestions: =>
     if @isIn(@typeScope)
@@ -113,13 +125,12 @@ class SuggestionBuilder
         .then(@getType)
     else if @isIn(@moduleScope)
       console.log('moduleScope')
-      @info.moduleList
-        .filter (line) =>
-          line.startsWith @replaceModuleName(@prefix)
-        .map (mod) =>
-          word: mod
-          label: 'module'
-          prefix: @prefix
+      @genSpaceSearch()
+        .then(@getModule)
+    else if @isIn(@preprocessorScope)
+      console.log('preprocessorScope')
+      @genSpaceSearch()
+        .then(@getPreprocessor)
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
       console.log('sourceScope')
