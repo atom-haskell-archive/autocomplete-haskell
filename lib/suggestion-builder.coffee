@@ -5,12 +5,13 @@ class SuggestionBuilder
   sourceScope: 'source.haskell'
   moduleScope: 'support.other.module.haskell'
 
-  constructor: (@options) ->
+  constructor: (@options,@info) ->
     @editor = @options.editor
     @prefix = @options.prefix
     @scopes = @options.scope.scopes
     @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
     @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
+
 
   addModules: (search) =>
     regex=/^import\s+(?:qualified\s+)?([\w.]+)/gm
@@ -21,14 +22,15 @@ class SuggestionBuilder
 
   genSearch: =>
     if @prefix=='_'
-      controller=@editor.haskellGhcModController
-      return [] unless controller
-      new Promise (resolve,reject) ->
-        controller.getTypeCallback (range,type,crange)->
-          if type!='???'
-            resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
-          else
-            reject(Error('err'))
+      new Promise (resolve,reject) =>
+        services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
+          cr=@options.cursor.getCurrentWordBufferRange()
+          gm.type @editor.getText(),cr,(range,type,crange)->
+            services.dispose()
+            if type!='???'
+              resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
+            else
+              reject(Error('err'))
     else
       @search()
 
@@ -99,25 +101,32 @@ class SuggestionBuilder
   replaceModuleName: (search) ->
     search.replace('_','.')
 
+  isIn: (scope) ->
+    @scopes.some (s) -> s==scope
+
   getSuggestions: =>
-    if !(@scopes.some (scope) => scope!=@sourceScope)
-      console.log('sourceScope')
-      @genSearch()
-        .then(@addModules)
-        .then(@searchHoogle)
-        .then(@getFirstClass)
-    else if (@scopes.some (scope) => scope==@typeScope)
+    if @isIn(@typeScope)
       console.log('typeScope')
       @search()
         .then(@addModules)
         .then(@searchHoogle)
         .then(@getType)
-    else if (@scopes.some (scope) => scope==@moduleScope)
+    else if @isIn(@moduleScope)
       console.log('moduleScope')
-      @search()
-        .then(@replaceModuleName)
+      @info.moduleList
+        .filter (line) =>
+          line.startsWith @replaceModuleName(@prefix)
+        .map (mod) =>
+          word: mod
+          label: 'module'
+          prefix: @prefix
+    #should be last as least sepcialized
+    else if @isIn(@sourceScope)
+      console.log('sourceScope')
+      @genSearch()
+        .then(@addModules)
         .then(@searchHoogle)
-        .then(@getModule)
+        .then(@getFirstClass)
     else
       console.log('unkScope')
       console.log(@scopes)
