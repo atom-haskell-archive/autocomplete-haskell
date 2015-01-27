@@ -17,6 +17,15 @@ class SuggestionBuilder
     @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
     @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
 
+  #general utility
+  trim: (label) =>
+    return unless label
+    if label.length>@trimTypeTo
+      label.slice(0,@trimTypeTo)+'...'
+    else
+      label
+
+  #Hoogle search
   addModules: (search) =>
     '+'+@controller.modules.join(' +')+' '+search
 
@@ -38,13 +47,6 @@ class SuggestionBuilder
           return
         resolve data.split('\n')
 
-  trim: (label) =>
-    return unless label
-    if label.length>@trimTypeTo
-      label.slice(0,@trimTypeTo)+'...'
-    else
-      label
-
   getFirstClass: (data) =>
     data
       .filter (line) ->
@@ -59,6 +61,7 @@ class SuggestionBuilder
           prefix: @prefix
         }
 
+  #ghc-mod search
   getModule: (prefix) =>
     @info.moduleList
       .filter (line) ->
