@@ -14,27 +14,27 @@ class SuggestionBuilder
     @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
     @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
 
+  getBufferModules: =>
+    modules=[]
+    regex=/^import\s+(?:qualified\s+)?([\w.]+)/gm
+    r = @editor.getBuffer().getRange()
+    @editor.backwardsScanInBufferRange regex, r, ({match}) ->
+      modules.push(match[1])
+    modules
 
   addModules: (search) =>
-    regex=/^import\s+(?:qualified\s+)?([\w.]+)/gm
-    regex2=new RegExp(regex.source,"")
-    modules=@editor.getText().match(regex).map (item) ->
-      regex2.exec(item)[1]
-    '+'+modules.join(' +')+' '+search
+    '+'+@getBufferModules().join(' +')+' '+search
 
-  genSearch: =>
-    if @prefix=='_'
-      new Promise (resolve,reject) =>
-        services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
-          cr=@options.cursor.getCurrentWordBufferRange()
-          gm.type @editor.getText(),cr,(range,type,crange)->
-            services.dispose()
-            if type!='???'
-              resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
-            else
-              reject(Error('err'))
-    else
-      @search()
+  genTypeSearch: =>
+    new Promise (resolve,reject) =>
+      services=atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
+        cr=@options.cursor.getCurrentWordBufferRange()
+        gm.type @editor.getText(),cr,(range,type,crange)->
+          services.dispose()
+          if type!='???'
+            resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
+          else
+            reject(Error('err'))
 
   search: =>
     Promise.resolve(@prefix)
@@ -119,6 +119,7 @@ class SuggestionBuilder
   getSuggestions: =>
     if @isIn(@typeScope)
       console.log('typeScope')
+      #TODO: use ghc-mod, need to latch on to editor for this
       @search()
         .then(@addModules)
         .then(@searchHoogle)
@@ -134,10 +135,17 @@ class SuggestionBuilder
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
       console.log('sourceScope')
-      @genSearch()
-        .then(@addModules)
-        .then(@searchHoogle)
-        .then(@getFirstClass)
+      if(@prefix=='_')
+        @genTypeSearch()
+          .then(@addModules)
+          .then(@searchHoogle)
+          .then(@getFirstClass)
+      else
+      #TODO: use ghc-mod, need to latch on to editor for this
+        @search()
+          .then(@addModules)
+          .then(@searchHoogle)
+          .then(@getFirstClass)
     else
       console.log('unkScope')
       console.log(@scopes)
