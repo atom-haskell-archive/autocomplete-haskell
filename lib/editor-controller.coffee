@@ -4,12 +4,14 @@ SuggestionBuilder = require './suggestion-builder'
 
 module.exports=
 class EditorController
-  constructor: (@editor,@ghcmod) ->
+  constructor: (@editor,p) ->
     @modules=[]
     @symbols=[]
+    @ghcmod=p.ghcmod
     @subscriptions = new CompositeDisposable
     @subscriptions.add @editor.onDidStopChanging @checkImportedModules
     @subscriptions.add @editor.onDidDestroy @destroy
+    @subscriptions.add p.onDidGetGhcModProvider @setGhcModProvider
     @checkImportedModules()
 
   setGhcModProvider: (@ghcmod) =>

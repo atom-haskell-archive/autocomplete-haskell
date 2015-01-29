@@ -15,20 +15,16 @@ class AutocompleteHaskell
 
   @activate: ->
     @p = new AutocompleteHaskell
-    provider =
-      selector: '.source.haskell'
-      blacklist: '.source.haskell .comment'
-      requestHandler: @p.buildSuggestions
-      # dispose: ->
-        # Your dispose logic here
     @registration = atom.services.provide  'autocomplete.provider',
       '1.0.0',
-      provider:provider
+      provider:@p
 
   @deactivate: ->
     @registration.dispose()
-    @p.destroy()
+    @p.dispose()
 
+  selector: '.source.haskell'
+  blacklist: '.source.haskell .comment'
   info:
     moduleList: []
     langOpts: []
@@ -56,16 +52,14 @@ class AutocompleteHaskell
     atom.services.consume "haskell-ghc-mod", "0.1.0", @ghcModProvider
     @observers=atom.workspace.observeTextEditors (editor) =>
       return unless editor.getGrammar().scopeName=="source.haskell"
-      ec = new EditorController(editor,@ghcmod)
-      @editorMap.set editor, ec
-      @onDidGetGhcModProvider ec.setGhcModProvider
+      @editorMap.set editor, new EditorController(editor,this)
 
-  destroy: ->
+  dispose: =>
     @observers.dispose()
     @emtitter?.destroy()
     for editor in atom.workspace.getEditors()
       @editorMap.get(editor)?.desrtoy?()
       @editorMap.delete(editor)
 
-  buildSuggestions: (options) =>
+  requestHandler: (options) =>
     @editorMap.get(options.editor)?.getSuggestions options,@info
