@@ -10,7 +10,7 @@ class EditorController
     @subscriptions = new CompositeDisposable
     @subscriptions.add @editor.onDidStopChanging @checkImportedModules
     @subscriptions.add @editor.onDidDestroy @destroy
-    @checkImportedModules
+    @checkImportedModules()
 
   setGhcModProvider: (@ghcmod) =>
     @updateModuleSymbols()
