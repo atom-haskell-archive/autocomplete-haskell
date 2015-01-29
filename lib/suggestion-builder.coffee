@@ -19,8 +19,7 @@ class SuggestionBuilder
 
   #general utility
   trim: (label) =>
-    return unless label
-    if label.length>@trimTypeTo
+    if label?.length>@trimTypeTo
       label.slice(0,@trimTypeTo)+'...'
     else
       label
