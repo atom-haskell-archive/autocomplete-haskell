@@ -4,13 +4,16 @@ SuggestionBuilder = require './suggestion-builder'
 
 module.exports=
 class EditorController
-  constructor: (@editor) ->
+  constructor: (@editor,@ghcmod) ->
     @modules=[]
     @symbols=[]
     @subscriptions = new CompositeDisposable
     @subscriptions.add @editor.onDidStopChanging @checkImportedModules
     @subscriptions.add @editor.onDidDestroy @destroy
     @checkImportedModules
+
+  setGhcModProvider: (@ghcmod) =>
+    @updateModuleSymbols()
 
   destroy: =>
     @editor = null
@@ -27,9 +30,8 @@ class EditorController
       @updateModuleSymbols()
 
   updateModuleSymbols: ->
-    atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
-      gm.browse @modules,(data)=>
-        @symbols=data
+    @ghcmod?.browse @modules,(data)=>
+      @symbols=data
 
   getSuggestions: (options,info)->
     sb=new SuggestionBuilder(options,info,this)

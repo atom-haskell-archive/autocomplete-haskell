@@ -31,13 +31,13 @@ class SuggestionBuilder
 
   genTypeSearch: =>
     new Promise (resolve,reject) =>
-      atom.services.consume "haskell-ghc-mod", "0.1.0", (gm) =>
-        cr=@options.cursor.getCurrentWordBufferRange()
-        gm.type @editor.getText(),cr,(range,type,crange)->
-          if type!='???'
-            resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
-          else
-            reject(Error('err'))
+      reject(Error('no ghc-mod provider')) unless @controller.ghcmod
+      cr=@options.cursor.getCurrentWordBufferRange()
+      @controller.ghcmod.type @editor.getText(),cr,(range,type,crange)->
+        if type!='???'
+          resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
+        else
+          reject(Error('err'))
 
   searchHoogle: (search) =>
     new Promise (resolve,reject) =>
