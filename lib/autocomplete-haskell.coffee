@@ -15,13 +15,15 @@ class AutocompleteHaskell
 
   @activate: ->
     @p = new AutocompleteHaskell
-    @registration = atom.services.provide  'autocomplete.provider',
-      '1.0.0',
-      provider:@p
 
   @deactivate: ->
-    @registration.dispose()
     @p.dispose()
+
+  @autocompleteProvider_1_0_0: () =>
+    {provider: @p}
+
+  @consumeGhcMod_0_1_0: (service) =>
+    @p.ghcModProvider service
 
   selector: '.source.haskell'
   blacklist: '.source.haskell .comment'
@@ -49,7 +51,6 @@ class AutocompleteHaskell
   constructor: ->
     @emitter = new Emitter
     @editorMap = new WeakMap
-    atom.services.consume "haskell-ghc-mod", "0.1.0", @ghcModProvider
     @observers=atom.workspace.observeTextEditors (editor) =>
       return unless editor.getGrammar().scopeName=="source.haskell"
       @editorMap.set editor, new EditorController(editor,this)

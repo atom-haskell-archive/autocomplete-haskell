@@ -10,5 +10,19 @@
   },
   "dependencies": {
     "underscore-plus": "*"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "1.0.0": "autocompleteProvider_1_0_0"
+      }
+    }
+  },
+  "consumedServices": {
+    "haskell-ghc-mod": {
+      "versions": {
+        "0.1.0": "consumeGhcMod_0_1_0"
+      }
+    }
   }
 }
