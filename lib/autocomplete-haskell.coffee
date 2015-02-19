@@ -14,16 +14,14 @@ module.exports = AutocompleteHaskell =
   provider: null
 
   activate: ->
-    @provider = new AutocompleteProvider unless @provider?
+    @provider = new AutocompleteProvider
 
   deactivate: ->
     @provider.dispose()
     @provider = null
 
-  autocompleteProvider_1_0_0: () =>
-    @provider = new AutocompleteProvider unless @provider?
+  autocompleteProvider_1_0_0: () ->
     {provider:@provider}
 
-  consumeGhcMod_0_1_0: (service) =>
-    @provider = new AutocompleteProvider unless @provider?
+  consumeGhcMod_0_1_0: (service) ->
     @provider.ghcModProvider service
