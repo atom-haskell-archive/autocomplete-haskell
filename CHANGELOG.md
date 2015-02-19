@@ -1,3 +1,6 @@
+## 0.2.1
+* BUGFIX: activation problems
+
 ## 0.2.0
 * Migrate to new json-based service provider
 * Move out provider code to sep. file
