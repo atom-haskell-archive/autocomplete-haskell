@@ -7,14 +7,14 @@ class EditorController
   constructor: (@editor,p) ->
     @modules=[]
     @symbols=[]
-    @ghcmod=p.ghcmod
+    @backend=p.backend
     @subscriptions = new CompositeDisposable
     @subscriptions.add @editor.onDidStopChanging @checkImportedModules
     @subscriptions.add @editor.onDidDestroy @destroy
-    @subscriptions.add p.onDidGetGhcModProvider @setGhcModProvider
+    @subscriptions.add p.onDidGetBackend @setBackend
     @checkImportedModules()
 
-  setGhcModProvider: (@ghcmod) =>
+  setBackend: (@backend) =>
     @updateModuleSymbols()
 
   destroy: =>
@@ -32,7 +32,7 @@ class EditorController
       @updateModuleSymbols()
 
   updateModuleSymbols: ->
-    @ghcmod?.browse @modules,(data)=>
+    @backend?.listImportedSymbols(@editor.getBuffer()).then (data) =>
       @symbols=data
 
   getSuggestions: (options,info)->

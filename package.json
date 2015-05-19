@@ -19,9 +19,9 @@
     }
   },
   "consumedServices": {
-    "haskell-ghc-mod": {
+    "haskell-completion-backend": {
       "versions": {
-        "0.1.0": "consumeGhcMod_0_1_0"
+        "0.1.0": "consumeCompBack_0_1_0"
       }
     }
   }

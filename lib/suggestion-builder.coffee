@@ -1,4 +1,3 @@
-CP = require('child_process')
 {Range} = require 'atom'
 module.exports=
 class SuggestionBuilder
@@ -29,36 +28,10 @@ class SuggestionBuilder
     '+'+@controller.modules.join(' +')+' '+search
 
   genTypeSearch: =>
-    new Promise (resolve,reject) =>
-      reject(Error('no ghc-mod provider')) unless @controller.ghcmod
-      cr=@options.cursor.getCurrentWordBufferRange()
-      @controller.ghcmod.type @editor.getText(),cr,(range,type,crange)->
-        if type!='???'
-          resolve ':: '+type.replace /[\w.]+\.[\w.]+/g,'_'
-        else
-          reject(Error('err'))
-
-  searchHoogle: (search) =>
-    new Promise (resolve,reject) =>
-      CP.execFile @hooglePath,[search], {}, (error,data) ->
-        if error
-          reject(error)
-          return
-        resolve data.split('\n')
-
-  getFirstClass: (data) =>
-    data
-      .filter (line) ->
-        line.contains('::')
-      .map (line) =>
-        line=line.slice(line.indexOf(' ')+1)
-        [name,type]=line.split('::').map (line) ->
-          line.trim()
-        {
-          word: name
-          label: @trim type
-          prefix: @prefix
-        }
+    unless @controller.backend
+      return Promise.reject(Error('no backend'))
+    cr=@options.cursor.getCurrentWordBufferRange()
+    @controller.backend.getType(@editor.getBuffer(),cr)
 
   #ghc-mod search
   getModule: (prefix) =>
@@ -91,20 +64,42 @@ class SuggestionBuilder
         resolve(matchText)
         stop()
 
-  getMatches: (symbols) =>
-    symbols
-      .filter (s) =>
-        s.startsWith(@prefix)
-      .map (s) ->
-        s.split('::')
+  getSymbols: () =>
+    [].concat (@symbols.map (m) ->
+      if m.qualified
+        m.symbols.map (s) ->
+          name: (m.alias ? m.name)+"."+s.name
+          type: s.type
+      else
+        m.symbols)...
+
+  getMatches: (prefix) =>
+    @getSymbols()
+      .filter (s) ->
+        s.name.startsWith(prefix)
       .map (s) =>
-        word: s[0].trim()
-        label: @trim s[1]?.trim()
+        word: s.name
+        label: @trim s.type
+        prefix: prefix
+
+  getTypeMatches: (type) =>
+    @getSymbols()
+      .filter (s) ->
+        return false unless s.type?
+        tl = s.type.split(' -> ').slice(-1)[0]
+        return false if tl.match(/^[a-z]$/)
+        ts = tl.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")
+        rx=RegExp ts.replace(/\b[a-z]\b/g,'.+'),''
+        console.log(rx)
+        rx.test(type)
+      .map (s) =>
+        word: s.name
+        label: @trim s.type
         prefix: @prefix
 
   getSuggestions: =>
     if @isIn(@typeScope)
-      @getMatches @symbols
+      @getMatches(@prefix)
     else if @isIn(@moduleScope)
       @genSpaceSearch()
         .then(@getModule)
@@ -115,10 +110,9 @@ class SuggestionBuilder
     else if @isIn(@sourceScope)
       if(@prefix=='_')
         @genTypeSearch()
-          .then(@addModules)
-          .then(@searchHoogle)
-          .then(@getFirstClass)
+          .then @getTypeMatches
       else
-        @getMatches @symbols
+        @genSpaceSearch()
+          .then @getMatches
     else
       []

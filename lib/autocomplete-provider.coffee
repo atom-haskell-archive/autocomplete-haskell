@@ -13,18 +13,17 @@ class AutocompleteProvider
   emitter: null
   editorMap: null
   observers: null
-  ghcmod: null
+  backend: null
 
-  ghcModProvider: (@ghcmod) =>
-    @ghcmod.list (res) => @info.moduleList=res
-    @ghcmod.lang (res) => @info.langOpts=res
-    @ghcmod.flag (res) => @info.ghcFlags=res
-    @ghcmod.browse ["Prelude"], (res) =>
-      @info.preludeSymbs=res
-    @emitter.emit 'did-get-ghc-mod-provider', @ghcmod
+  backendProvider: (@backend) =>
+    @emitter.emit 'did-get-backend', @backend
+    @backend.listModules(atom.project.getDirectories()[0]).then (res) =>
+      @info.moduleList=res
+    @backend.listLanguagePragmas().then (res) => @info.langOpts=res
+    @backend.listCompilerOptions().then (res) => @info.ghcFlags=res
 
-  onDidGetGhcModProvider: (callback) ->
-    @emitter.on 'did-get-ghc-mod-provider', callback
+  onDidGetBackend: (callback) ->
+    @emitter.on 'did-get-backend', callback
 
   constructor: ->
     @emitter = new Emitter

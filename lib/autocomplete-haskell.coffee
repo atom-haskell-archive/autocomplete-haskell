@@ -23,5 +23,5 @@ module.exports = AutocompleteHaskell =
   autocompleteProvider_1_0_0: () ->
     {provider:@provider}
 
-  consumeGhcMod_0_1_0: (service) ->
-    @provider.ghcModProvider service
+  consumeCompBack_0_1_0: (service) ->
+    @provider.backendProvider service

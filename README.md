@@ -5,9 +5,9 @@ source. It depends on [autocomplete-plus][1] and uses interface to ghc-mod
 provided by [haskell-ghc-mod][2]. It also relies on scope names provided by
 [language-haskell][5]
 
-If you also install [Hoogle][3], you can also show auto-completions for hole
+You can also show auto-completions for hole
 `_`. This will try to find replacements based on type. It's no magic though,
-so if hole has some crazy type, Hoogle won't find anything.
+so if hole has some crazy type, it won't find anything.
 
 Current autocompletion scopes:
 
@@ -23,7 +23,6 @@ default autocomplete-plus fuzzy completions.
 
 [1]: https://atom.io/packages/autocomplete-plus
 [2]: https://atom.io/packages/haskell-ghc-mod
-[3]: https://www.haskell.org/hoogle
 [4]: http://www.mew.org/~kazu/proj/ghc-mod/en/
 [5]: https://atom.io/packages/language-haskell
 

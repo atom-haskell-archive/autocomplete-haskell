@@ -1,3 +1,7 @@
+## 0.3.0
+* Updated to work with newest haskell-ghc-mod
+* Hole completions no longer depend on Hoogle
+
 ## 0.2.1
 * BUGFIX: activation problems
 
