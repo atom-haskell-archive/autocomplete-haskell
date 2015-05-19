@@ -90,7 +90,6 @@ class SuggestionBuilder
         return false if tl.match(/^[a-z]$/)
         ts = tl.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")
         rx=RegExp ts.replace(/\b[a-z]\b/g,'.+'),''
-        console.log(rx)
         rx.test(type)
       .map (s) =>
         word: s.name
