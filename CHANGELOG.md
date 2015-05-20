@@ -1,3 +1,6 @@
+## 0.3.1
+* Fix deprecated ac+ blacklist option
+
 ## 0.3.0
 * Updated to work with newest haskell-ghc-mod
 * Hole completions no longer depend on Hoogle
