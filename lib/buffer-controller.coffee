@@ -29,7 +29,7 @@ class BufferController
         @updateModuleSymbols()
 
   updateModuleSymbols: =>
-    @backend?.listImportedSymbols(@modules,@buffer).then (data) =>
+    @backend?.listImportedSymbols(@buffer,@modules).then (data) =>
       @symbols=data
 
   getSuggestions: (options,info)->
