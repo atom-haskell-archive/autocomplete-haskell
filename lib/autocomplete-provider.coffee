@@ -5,11 +5,12 @@ module.exports =
 class AutocompleteProvider
   selector: '.source.haskell'
   blacklist: '.source.haskell .comment'
+  inclusionPriority: 1
+  excludeLowerPriority: false
   info:
     moduleList: []
     langOpts: []
     ghcFlags: []
-    preludeSymbs: []
   emitter: null
   bufferMap: null
   observers: null
@@ -36,9 +37,9 @@ class AutocompleteProvider
   dispose: =>
     @observers.dispose()
     @emtitter?.destroy()
-    for editor in atom.workspace.getEditors()
-      @bufferMap.get(editor)?.desrtoy?()
-      @bufferMap.delete(editor)
+    for editor in atom.workspace.getTextEditors()
+      @bufferMap.get(editor.getBuffer())?.desrtoy?()
+      @bufferMap.delete(editor.getBuffer())
 
-  requestHandler: (options) =>
+  getSuggestions: (options) =>
     @bufferMap.get(options.editor.getBuffer())?.getSuggestions? options,@info

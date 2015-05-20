@@ -11,8 +11,8 @@ class SuggestionBuilder
   constructor: (@options,@info,@controller) ->
     @editor = @options.editor
     @prefix = @options.prefix
-    @scopes = @options.scope.scopes
-    @symbols = @info.preludeSymbs.concat @controller.symbols
+    @scopes = @options.scopeDescriptor.scopes
+    @symbols = @controller.symbols
     @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
     @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
 
@@ -30,8 +30,8 @@ class SuggestionBuilder
   genTypeSearch: =>
     unless @controller.backend
       return Promise.reject(Error('no backend'))
-    cr=@options.cursor.getCurrentWordBufferRange()
-    @controller.backend.getType(@editor.getBuffer(),cr)
+    r = new Range @options.bufferPosition, @options.bufferPosition
+    @controller.backend.getType(@editor.getBuffer(), r)
 
   #ghc-mod search
   getModule: (prefix) =>
@@ -39,9 +39,9 @@ class SuggestionBuilder
       .filter (line) ->
         line.startsWith prefix
       .map (mod) ->
-        word: mod
-        label: 'module'
-        prefix: prefix
+        text: mod
+        replacementPrefix: prefix
+        type: 'import'
 
   getPreprocessor: (prefix) =>
     (if prefix[0]=='-' then @info.ghcFlags
@@ -49,16 +49,17 @@ class SuggestionBuilder
       .filter (line) ->
         line.startsWith prefix
       .map (mod) ->
-        word: mod
-        label: if prefix[0]=='-' then 'ghc flag' else 'Language'
-        prefix: prefix
+        text: mod
+        rightLabel: if prefix[0]=='-' then 'ghc flag' else 'Language'
+        replacementPrefix: prefix
+        type: 'keyword'
 
   isIn: (scope) ->
     @scopes.some (s) -> s==scope
 
   genSpaceSearch: =>
-    r = new Range @options.cursor.getCurrentLineBufferRange().start,
-      @options.position
+    r = new Range {column:0, row:@options.bufferPosition.row},
+      @options.bufferPosition
     new Promise (resolve) =>
       @editor.backwardsScanInBufferRange /[^\s]+/, r, ({matchText,stop})->
         resolve(matchText)
@@ -73,14 +74,16 @@ class SuggestionBuilder
       else
         m.symbols)...
 
-  getMatches: (prefix) =>
+  getMatches: (prefix,type) =>
     @getSymbols()
       .filter (s) ->
         s.name.startsWith(prefix)
       .map (s) =>
-        word: s.name
-        label: @trim s.type
-        prefix: prefix
+        text: s.name
+        rightLabel: @trim s.type
+        type: type ? 'function'
+        replacementPrefix: prefix
+        description: s.type
 
   getTypeMatches: (type) =>
     @getSymbols()
@@ -92,13 +95,15 @@ class SuggestionBuilder
         rx=RegExp ts.replace(/\b[a-z]\b/g,'.+'),''
         rx.test(type)
       .map (s) =>
-        word: s.name
-        label: @trim s.type
-        prefix: @prefix
+        text: s.name
+        rightLabel: @trim s.type
+        type: 'function'
+        replacementPrefix: @prefix
+        description: s.type
 
   getSuggestions: =>
     if @isIn(@typeScope)
-      @getMatches(@prefix)
+      @getMatches(@prefix, 'type')
     else if @isIn(@moduleScope)
       @genSpaceSearch()
         .then(@getModule)

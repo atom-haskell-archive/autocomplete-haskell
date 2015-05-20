@@ -20,8 +20,8 @@ module.exports = AutocompleteHaskell =
     @provider.dispose()
     @provider = null
 
-  autocompleteProvider_1_0_0: () ->
-    {provider:@provider}
+  autocompleteProvider_2_0_0: () ->
+    @provider
 
   consumeCompBack_0_1_0: (service) ->
     @provider.backendProvider service
