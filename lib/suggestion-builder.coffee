@@ -75,13 +75,25 @@ class SuggestionBuilder
         m.symbols)...
 
   getMatches: (prefix,type) =>
+    isType = (type) ->
+      /^(?:class|type|data|newtype)/.test(type)
+    isClass = (type) ->
+      /^(?:class)/.test(type)
     @getSymbols()
       .filter (s) ->
-        s.name.startsWith(prefix)
+        s.name.startsWith(prefix)\
+          and (if type? then isType(s.type) else true)
       .map (s) =>
         text: s.name
         rightLabel: @trim s.type
-        type: type ? 'function'
+        type:
+          if isType(s.type)
+            if isClass(s.type)
+              'class'
+            else
+              'type'
+          else
+            'function'
         replacementPrefix: prefix
         description: s.type
 
