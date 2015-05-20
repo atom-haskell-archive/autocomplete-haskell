@@ -1,4 +1,4 @@
-EditorController = require './editor-controller'
+BufferController = require './buffer-controller'
 {Emitter} = require 'atom'
 
 module.exports =
@@ -11,7 +11,7 @@ class AutocompleteProvider
     ghcFlags: []
     preludeSymbs: []
   emitter: null
-  editorMap: null
+  bufferMap: null
   observers: null
   backend: null
 
@@ -27,17 +27,18 @@ class AutocompleteProvider
 
   constructor: ->
     @emitter = new Emitter
-    @editorMap = new WeakMap
+    @bufferMap = new WeakMap
     @observers=atom.workspace.observeTextEditors (editor) =>
       return unless editor.getGrammar().scopeName=="source.haskell"
-      @editorMap.set editor, new EditorController(editor,this)
+      buf = editor.getBuffer()
+      @bufferMap.set buf, new BufferController(buf,this)
 
   dispose: =>
     @observers.dispose()
     @emtitter?.destroy()
     for editor in atom.workspace.getEditors()
-      @editorMap.get(editor)?.desrtoy?()
-      @editorMap.delete(editor)
+      @bufferMap.get(editor)?.desrtoy?()
+      @bufferMap.delete(editor)
 
   requestHandler: (options) =>
-    @editorMap.get(options.editor)?.getSuggestions options,@info
+    @bufferMap.get(options.editor.getBuffer())?.getSuggestions? options,@info
