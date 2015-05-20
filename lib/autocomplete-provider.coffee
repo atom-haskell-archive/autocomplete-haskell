@@ -4,7 +4,7 @@ BufferController = require './buffer-controller'
 module.exports =
 class AutocompleteProvider
   selector: '.source.haskell'
-  blacklist: '.source.haskell .comment'
+  disableForSelector: '.source.haskell .comment'
   inclusionPriority: 1
   excludeLowerPriority: false
   info:
