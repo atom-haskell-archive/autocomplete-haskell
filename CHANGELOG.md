@@ -1,6 +1,8 @@
 ## 0.3.0
 * Updated to work with newest haskell-ghc-mod
 * Hole completions no longer depend on Hoogle
+* Autocomplete+ API 2.0
+* Changed EditorController to BufferController
 
 ## 0.2.1
 * BUGFIX: activation problems
