@@ -9,7 +9,7 @@ class BufferController
     @symbols=[]
     @backend=p.backend
     @subscriptions = new CompositeDisposable
-    @subscriptions.add @buffer.onDidStopChanging @checkImportedModules
+    @subscriptions.add @buffer.onDidSave @checkImportedModules
     @subscriptions.add @buffer.onDidDestroy @destroy
     @subscriptions.add p.onDidGetBackend @setBackend
     @checkImportedModules()
