@@ -1,6 +1,13 @@
 AutocompleteProvider = require './autocomplete-provider.coffee'
 
 module.exports = AutocompleteHaskell =
+  config:
+    ideBackendInfo:
+      type: "boolean"
+      default: true
+      description: "Show info message about haskell-ide-backend service on
+                    activation"
+
   provider: null
 
   activate: ->
