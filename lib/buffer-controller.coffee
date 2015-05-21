@@ -15,7 +15,7 @@ class BufferController
     @checkImportedModules()
 
   setBackend: (@backend) =>
-    @updateModuleSymbols()
+    @checkImportedModules()
 
   destroy: =>
     @buffer = null
