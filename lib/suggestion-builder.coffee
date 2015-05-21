@@ -1,11 +1,11 @@
 {Range} = require 'atom'
 module.exports=
 class SuggestionBuilder
-  typeScope: 'meta.function.type-declaration.haskell'
-  sourceScope: 'source.haskell'
-  moduleScope: 'support.other.module.haskell'
-  preprocessorScope: 'meta.preprocessor.haskell'
-  exportsScope: 'meta.declaration.exports.haskell'
+  typeScope: ['meta.function.type-declaration.haskell']
+  sourceScope: ['source.haskell']
+  moduleScope: ['meta.import.haskell', 'support.other.module.haskell']
+  preprocessorScope: ['meta.preprocessor.haskell']
+  exportsScope: ['meta.import.haskell', 'meta.declaration.exports.haskell']
   #TODO: exports scope
 
   constructor: (@options,@info,@controller) ->
@@ -13,6 +13,8 @@ class SuggestionBuilder
     @prefix = @options.prefix
     @scopes = @options.scopeDescriptor.scopes
     @symbols = @controller.symbols
+    @lineRange = new Range [0, @options.bufferPosition.row],
+      @options.bufferPosition
 
   genTypeSearch: =>
     unless @controller.backend
@@ -42,18 +44,19 @@ class SuggestionBuilder
         type: 'keyword'
 
   isIn: (scope) ->
-    @scopes.some (s) -> s==scope
+    scope.every (s1) =>
+      @scopes.some (s) ->
+        s==s1
 
   genSpaceSearch: =>
-    r = new Range {column:0, row:@options.bufferPosition.row},
-      @options.bufferPosition
     new Promise (resolve) =>
-      @editor.backwardsScanInBufferRange /[^\s]+/, r, ({matchText,stop})->
-        resolve(matchText)
-        stop()
+      @editor.backwardsScanInBufferRange /[\w.']+/,
+        @lineRange, ({matchText,stop})->
+          resolve(matchText)
+          stop()
 
   buildSymbolSuggestion: (s, prefix) ->
-    text: s.name
+    text: s.qname ? s.name
     rightLabel: s.module.name
     type: s.symbolType
     replacementPrefix: prefix
@@ -80,12 +83,32 @@ class SuggestionBuilder
       .map (s) =>
         @buildSymbolSuggestion(s, @prefix)
 
+  getModuleMatches: (prefix) =>
+    mod=""
+    @editor.backwardsScanInBufferRange /^import ([\w.]+)/, @lineRange,
+      ({match,stop}) ->
+        mod=match[1]
+        stop()
+    return [] unless mod?
+    @controller.backend.listImportedSymbols @editor.getBuffer(), [{name: mod}]
+      .then (symbols) =>
+        symbols
+          .filter (s) ->
+            s.name.startsWith(prefix)
+          .map (s) =>
+            @buildSymbolSuggestion(s,prefix)
+
   getSuggestions: =>
     if @isIn(@typeScope)
-      @getMatches(@prefix, 'type')
+      @genSpaceSearch()
+        .then (prefix) =>
+          @getMatches(prefix, true)
     else if @isIn(@moduleScope)
       @genSpaceSearch()
         .then(@getModule)
+    else if @isIn(@exportsScope)
+      @genSpaceSearch()
+        .then(@getModuleMatches)
     else if @isIn(@preprocessorScope)
       @genSpaceSearch()
         .then(@getPreprocessor)
