@@ -7,6 +7,7 @@ class BufferController
   constructor: (@buffer,p) ->
     @modules=[]
     @symbols=[]
+    @symbolsType=[]
     @backend=p.backend
     @subscriptions = new CompositeDisposable
     @subscriptions.add @buffer.onDidSave @checkImportedModules
@@ -31,6 +32,8 @@ class BufferController
   updateModuleSymbols: =>
     @backend?.listImportedSymbols(@buffer,@modules).then (data) =>
       @symbols=data
+      @symbolsType=@symbols.filter (s) ->
+        s.symbolType=='class' or s.symbolType=='type'
 
   getSuggestions: (options,info)->
     sb=new SuggestionBuilder(options,info,this)

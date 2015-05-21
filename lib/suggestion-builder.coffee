@@ -1,4 +1,6 @@
 {Range} = require 'atom'
+{filter,score} = require 'fuzzaldrin'
+
 module.exports=
 class SuggestionBuilder
   typeScope: ['meta.function.type-declaration.haskell']
@@ -17,6 +19,7 @@ class SuggestionBuilder
     @prefix = @options.prefix
     @scopes = @options.scopeDescriptor.scopes
     @symbols = @controller.symbols
+    @symbolsType = @controller.symbolsType
     @lineRange = new Range [0, @options.bufferPosition.row],
       @options.bufferPosition
 
@@ -39,9 +42,7 @@ class SuggestionBuilder
   #ghc-mod search
   getModule: =>
     prefix = @getPrefix()
-    @info.moduleList
-      .filter (line) ->
-        line.startsWith prefix
+    filter @info.moduleList, prefix
       .map (mod) ->
         text: mod
         replacementPrefix: prefix
@@ -63,9 +64,7 @@ class SuggestionBuilder
       label='Pragma'
       list=@pragmaWords
 
-    list
-      .filter (line) ->
-        line.startsWith prefix
+    filter list, prefix
       .map (mod) ->
         text: mod
         rightLabel: label
@@ -81,11 +80,7 @@ class SuggestionBuilder
 
   getMatches: (type) =>
     prefix=@getPrefix()
-    @symbols
-      .filter (s) ->
-        s.name.startsWith(prefix)\
-          and (if type? then s.symbolType=='class' or s.symbolType=='type'\
-                        else true)
+    filter (if type? then @symbolsType else @symbols), prefix, key: 'name'
       .map (s) =>
         @buildSymbolSuggestion(s, prefix)
 
@@ -97,12 +92,14 @@ class SuggestionBuilder
       .then (type) =>
         @symbols
           .filter (s) ->
-            return false unless s.type?
-            tl = s.type.split(' -> ').slice(-1)[0]
+            return false unless s.typeSignature?
+            tl = s.typeSignature.split(' -> ').slice(-1)[0]
             return false if tl.match(/^[a-z]$/)
             ts = tl.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")
             rx=RegExp ts.replace(/\b[a-z]\b/g,'.+'),''
             rx.test(type)
+          .sort (a,b) ->
+            score(b.typeSignature,type)-score(a.typeSignature,type)
           .map (s) =>
             @buildSymbolSuggestion(s, @prefix)
 
@@ -112,9 +109,7 @@ class SuggestionBuilder
     return [] unless mod?
     @controller.backend.listImportedSymbols @editor.getBuffer(), [{name: mod}]
       .then (symbols) =>
-        symbols
-          .filter (s) ->
-            s.name.startsWith(prefix)
+        filter symbols, prefix, key: 'name'
           .map (s) =>
             @buildSymbolSuggestion(s,prefix)
 

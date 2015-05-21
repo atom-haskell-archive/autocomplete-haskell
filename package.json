@@ -9,7 +9,8 @@
     "atom": ">=0.199.0"
   },
   "dependencies": {
-    "underscore-plus": "*"
+    "underscore-plus": "*",
+    "fuzzaldrin": "2.1"
   },
   "providedServices": {
     "autocomplete.provider": {
