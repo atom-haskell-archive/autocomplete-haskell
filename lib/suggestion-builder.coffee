@@ -13,19 +13,6 @@ class SuggestionBuilder
     @prefix = @options.prefix
     @scopes = @options.scopeDescriptor.scopes
     @symbols = @controller.symbols
-    @trimTypeTo=atom.config.get 'autocomplete-haskell.trimTypeTo'
-    @hooglePath=atom.config.get 'autocomplete-haskell.hooglePath'
-
-  #general utility
-  trim: (label) =>
-    if label?.length>@trimTypeTo
-      label.slice(0,@trimTypeTo)+'...'
-    else
-      label
-
-  #Hoogle search
-  addModules: (search) =>
-    '+'+@controller.modules.join(' +')+' '+search
 
   genTypeSearch: =>
     unless @controller.backend
@@ -65,40 +52,24 @@ class SuggestionBuilder
         resolve(matchText)
         stop()
 
-  getSymbols: () =>
-    [].concat (@symbols.map (m) ->
-      if m.qualified
-        m.symbols.map (s) ->
-          name: (m.alias ? m.name)+"."+s.name
-          type: s.type
-      else
-        m.symbols)...
+  buildSymbolSuggestion: (s, prefix) ->
+    text: s.name
+    rightLabel: s.module.name
+    type: s.symbolType
+    replacementPrefix: prefix
+    description: s.name+" :: "+s.typeSignature
 
   getMatches: (prefix,type) =>
-    isType = (type) ->
-      /^(?:class|type|data|newtype)/.test(type)
-    isClass = (type) ->
-      /^(?:class)/.test(type)
-    @getSymbols()
+    @symbols
       .filter (s) ->
         s.name.startsWith(prefix)\
-          and (if type? then isType(s.type) else true)
+          and (if type? then s.symbolType=='class' or s.symbolType=='type'\
+                        else true)
       .map (s) =>
-        text: s.name
-        rightLabel: @trim s.type
-        type:
-          if isType(s.type)
-            if isClass(s.type)
-              'class'
-            else
-              'type'
-          else
-            'function'
-        replacementPrefix: prefix
-        description: s.type
+        @buildSymbolSuggestion(s, prefix)
 
   getTypeMatches: (type) =>
-    @getSymbols()
+    @symbols
       .filter (s) ->
         return false unless s.type?
         tl = s.type.split(' -> ').slice(-1)[0]
@@ -107,11 +78,7 @@ class SuggestionBuilder
         rx=RegExp ts.replace(/\b[a-z]\b/g,'.+'),''
         rx.test(type)
       .map (s) =>
-        text: s.name
-        rightLabel: @trim s.type
-        type: 'function'
-        replacementPrefix: @prefix
-        description: s.type
+        @buildSymbolSuggestion(s, @prefix)
 
   getSuggestions: =>
     if @isIn(@typeScope)

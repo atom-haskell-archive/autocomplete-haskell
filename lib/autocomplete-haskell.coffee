@@ -1,16 +1,6 @@
 AutocompleteProvider = require './autocomplete-provider.coffee'
 
 module.exports = AutocompleteHaskell =
-  config:
-    trimTypeTo:
-      type: 'string'
-      default: '50'
-      description: 'Trim long types to this number of characters'
-    hooglePath:
-      type: 'string'
-      default: 'hoogle'
-      description: 'Path to hoogle executable'
-
   provider: null
 
   activate: ->
