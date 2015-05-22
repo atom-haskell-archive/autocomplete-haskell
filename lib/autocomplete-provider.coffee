@@ -34,19 +34,38 @@ class AutocompleteProvider
       buf = editor.getBuffer()
       unless @bufferMap.get(buf)?
         @bufferMap.set buf, new BufferController(buf,this)
-    if atom.config.get('autocomplete-haskell.ideBackendInfo')
+    if atom.config.get('autocomplete-haskell.completionBackendInfo')
       setTimeout (=>
         unless @backend?
-          message = "
-            Autocomplete-haskell:
-            Autocomplete-haskell requires a package providing
-            haskell-completion-backend service.
-            Only one such package should be activated at a time.
-            Consider installing haskell-ghc-mod or other package, which
-            provides haskell-completion-backend.
-            You can disable this message in autocomplete-haskell settings.
-            "
-          atom.notifications.addInfo message, dismissable: true
+          bn = atom.config.get('autocomplete-haskell.useBackend')
+          if !bn
+            message = "
+              Ide-haskell:
+              Ide-haskell requires a package providing
+              haskell-completion-backend service.
+              Consider installing haskell-ghc-mod or other package, which
+              provides haskell-completion-backend.
+              You can disable this message in autocomplete-haskell settings.
+              "
+          else
+            p=atom.packages.getActivePackage(bn)
+            if p?
+              message = "
+                Ide-haskell:
+                You have selected #{bn} as your backend provider, but it
+                does not provide haskell-completion-backend service.
+                You may need to update #{bn}.
+                You can disable this message in autocomplete-haskell settings.
+                "
+            else
+              message = "
+                Ide-haskell:
+                You have selected #{bn} as your backend provider, but it
+                failed to activate.
+                Check your spelling and if #{bn} is installed and activated.
+                You can disable this message in autocomplete-haskell settings.
+                "
+          atom.notifications.addWarning message, dismissable: true
           console.log message
         ), 5000
 
