@@ -36,7 +36,7 @@ class SuggestionBuilder
 
   buildSymbolSuggestion: (s, prefix) ->
     text: s.qname ? s.name
-    rightLabel: s.module.name
+    rightLabel: s.module?.name
     type: s.symbolType
     replacementPrefix: prefix
     description: s.name+" :: "+s.typeSignature
