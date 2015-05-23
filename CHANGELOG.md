@@ -1,3 +1,15 @@
+## 0.4.0
+* Use haskell-completion-backend service
+* Add message on multiple backends and none selected
+* Possible undefined symbol module
+* Remove dep on underscore-plus
+* Specify atom version according to docs
+* Specify package versions
+* Add info on haskell-completion-backend service
+* Use fuzzaldrin
+* Added pragma words, general overhaul
+* Cleanup, array scopes, support for exportsScope
+
 ## 0.3.1
 * Fix deprecated ac+ blacklist option
 
