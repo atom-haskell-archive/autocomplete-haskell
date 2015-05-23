@@ -1,29 +1,27 @@
 # autocomplete-haskell atom package
 
-Autocomplete-haskell uses [Ghc-Mod][4] to find auto-completions for Haskell
-source. It depends on [autocomplete-plus][1] and uses interface to ghc-mod
-provided by [haskell-ghc-mod][2]. It also relies on scope names provided by
-[language-haskell][5]
+Autocomplete-haskell is and interface from `haskell-completion-backend` service
+to `autocomplete-plus`.
+It relies on scope names provided by [language-haskell][1]
 
-You can also show auto-completions for hole
-`_`. This will try to find replacements based on type. It's no magic though,
-so if hole has some crazy type, it won't find anything.
+You can show auto-completions for hole `_`. This will try to find replacements
+based on type. It's no magic though, so if hole has some crazy type, it won't
+find anything.
 
 Current autocompletion scopes:
 
 * Import module name
+* Import module symbols
 * Language pragmas
 * OPTIONS_GHC pragma
 * Type name
+* Class name
 * Symbol name
 
 Sadly, it does not pick up types and/or other symbols defined in current file
 (ghc-mod seems to be incapable of this feat), so for this you have to rely on
-default autocomplete-plus fuzzy completions.
+default autocomplete-plus SymbolProvider.
 
-[1]: https://atom.io/packages/autocomplete-plus
-[2]: https://atom.io/packages/haskell-ghc-mod
-[4]: http://www.mew.org/~kazu/proj/ghc-mod/en/
-[5]: https://atom.io/packages/language-haskell
+[1]: https://atom.io/packages/language-haskell
 
 ![Screencast](https://raw.githubusercontent.com/lierdakil/autocomplete-haskell/master/screencast.gif)
