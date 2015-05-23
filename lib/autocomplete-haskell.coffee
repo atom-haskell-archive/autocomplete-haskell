@@ -68,9 +68,14 @@ module.exports = AutocompleteHaskell =
       (new SuggestionBuilder options, @backend).getSuggestions()
 
   consumeCompBack_0_1_0: (service) ->
-    return if @backend?
     bn = atom.config.get('autocomplete-haskell.useBackend')
     return if !!bn and service.name()!=bn
+    if @backend?
+      atom.notifications.addInfo "autocomplete-haskell is already using
+        backend #{@backend?.name?()}, and new backend #{service?.name?()}
+        appeared. You can select one in autocomplete-haskell settings.
+        Will keep using #{@backend?.name?()} for now.", dismissable: true
+      return
     @backend = service
     @backend.onDidDestroy =>
       @backend = null
