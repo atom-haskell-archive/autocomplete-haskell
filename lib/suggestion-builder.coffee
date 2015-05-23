@@ -1,5 +1,5 @@
 {Range} = require 'atom'
-{filter,score} = require 'fuzzaldrin'
+{filter} = require 'fuzzaldrin'
 
 module.exports=
 class SuggestionBuilder
@@ -14,62 +14,25 @@ class SuggestionBuilder
     'NOINLINE', 'ANN', 'LINE', 'RULES', 'SPECIALIZE', 'UNPACK', 'SOURCE'
   ]
 
-  constructor: (@options,@info,@controller) ->
-    @editor = @options.editor
-    @prefix = @options.prefix
-    @scopes = @options.scopeDescriptor.scopes
-    @symbols = @controller.symbols
-    @symbolsType = @controller.symbolsType
+  constructor: (@options,@backend) ->
+    @buffer = @options.editor.getBuffer()
     @lineRange = new Range [0, @options.bufferPosition.row],
       @options.bufferPosition
 
   lineSearch: (rx,idx=0) =>
     res=""
-    @editor.backwardsScanInBufferRange rx,
-      @lineRange, ({match,stop})->
-        res=match[idx]
-        stop()
+    @buffer.backwardsScanInRange rx, @lineRange, ({match,stop})->
+      res=match[idx]
+      stop()
     res
 
   isIn: (scope) ->
     scope.every (s1) =>
-      @scopes.some (s) ->
+      @options.scopeDescriptor.scopes.some (s) ->
         s==s1
 
   getPrefix: (rx=/[\w.']+/) =>
     @lineSearch rx
-
-  #ghc-mod search
-  getModule: =>
-    prefix = @getPrefix()
-    filter @info.moduleList, prefix
-      .map (mod) ->
-        text: mod
-        replacementPrefix: prefix
-        type: 'import'
-
-  getPreprocessor: =>
-    kw=@lineSearch /\b(LANGUAGE|OPTIONS_GHC)\b/
-    prefix=@getPrefix()
-    return [] unless kw?
-    label=''
-    if kw=='OPTIONS_GHC'
-      prefix=@getPrefix(/[\w-]+/)
-      label='GHC Flag'
-      list=@info.ghcFlags
-    else if kw=='LANGUAGE'
-      label='Language'
-      list=@info.langOpts
-    else
-      label='Pragma'
-      list=@pragmaWords
-
-    filter list, prefix
-      .map (mod) ->
-        text: mod
-        rightLabel: label
-        replacementPrefix: prefix
-        type: 'keyword'
 
   buildSymbolSuggestion: (s, prefix) ->
     text: s.qname ? s.name
@@ -78,55 +41,57 @@ class SuggestionBuilder
     replacementPrefix: prefix
     description: s.name+" :: "+s.typeSignature
 
-  getMatches: (type) =>
-    prefix=@getPrefix()
-    filter (if type? then @symbolsType else @symbols), prefix, key: 'name'
-      .map (s) =>
-        @buildSymbolSuggestion(s, prefix)
+  buildSimpleSuggestion: (type, text, prefix, label) ->
+    text: text
+    type: type
+    replacementPrefix: prefix
+    rightLabel: label
 
-  getTypeMatches: () =>
-    unless @controller.backend
-      return Promise.reject(Error('no backend'))
-    r = new Range @options.bufferPosition, @options.bufferPosition
-    @controller.backend.getType @editor.getBuffer(), r
-      .then (type) =>
-        @symbols
-          .filter (s) ->
-            return false unless s.typeSignature?
-            tl = s.typeSignature.split(' -> ').slice(-1)[0]
-            return false if tl.match(/^[a-z]$/)
-            ts = tl.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")
-            rx=RegExp ts.replace(/\b[a-z]\b/g,'.+'),''
-            rx.test(type)
-          .sort (a,b) ->
-            score(b.typeSignature,type)-score(a.typeSignature,type)
-          .map (s) =>
-            @buildSymbolSuggestion(s, @prefix)
-
-  getModuleMatches: =>
+  processSuggestions: (f,p) =>
     prefix = @getPrefix()
-    mod=@lineSearch /^import ([\w.]+)/, 1
-    return [] unless mod?
-    @controller.backend.listImportedSymbols @editor.getBuffer(), [{name: mod}]
-      .then (symbols) =>
-        filter symbols, prefix, key: 'name'
-          .map (s) =>
-            @buildSymbolSuggestion(s,prefix)
+    f @buffer, prefix, @options.bufferPosition
+      .then (symbols) -> symbols.map (s) -> p s, prefix
+
+  symbolSuggestions: (f) =>
+    @processSuggestions f, @buildSymbolSuggestion
+
+  moduleSuggestions: =>
+    @processSuggestions @backend.getCompletionsForModule, (s,prefix) =>
+      @buildSimpleSuggestion 'import', s, prefix
+
+  preprocessorSuggestions: =>
+    kw=@lineSearch /\b(LANGUAGE|OPTIONS_GHC)\b/
+    prefix=@getPrefix()
+    return [] unless kw?
+    label=''
+    if kw=='OPTIONS_GHC'
+      prefix=@getPrefix(/[\w-]+/)
+      label='GHC Flag'
+      f=@backend.getCompletionsForCompilerOptions
+    else if kw=='LANGUAGE'
+      label='Language'
+      f=@backend.getCompletionsForLanguagePragmas
+    else
+      label='Pragma'
+      f = (b,p) => Promise.resolve(filter @pragmaWords, p)
+
+    @processSuggestions f, (s, prefix) =>
+      @buildSimpleSuggestion 'keyword', s, prefix, label
 
   getSuggestions: =>
     if @isIn(@typeScope)
-      @getMatches(true)
+      @symbolSuggestions @backend.getCompletionsForType
     else if @isIn(@moduleScope)
-      @getModule()
+      @moduleSuggestions()
     else if @isIn(@exportsScope)
-      @getModuleMatches()
+      @symbolSuggestions @backend.getCompletionsForSymbolInModule
     else if @isIn(@preprocessorScope)
-      @getPreprocessor()
+      @preprocessorSuggestions()
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
-      if(@prefix=='_')
-        @getTypeMatches()
+      if(@options.prefix=='_')
+        @symbolSuggestions @backend.getCompletionsForHole
       else
-        @getMatches()
+        @symbolSuggestions @backend.getCompletionsForSymbol
     else
       []
