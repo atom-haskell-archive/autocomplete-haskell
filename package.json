@@ -9,7 +9,8 @@
     "atom": ">=0.174.0 <2.0.0"
   },
   "dependencies": {
-    "fuzzaldrin": "^2.1.0"
+    "fuzzaldrin": "^2.1.0",
+    "atom-backend-helper": "^0.0.1"
   },
   "providedServices": {
     "autocomplete.provider": {
