@@ -1,3 +1,6 @@
+## 0.4.1
+* atom-backend-helper version bump
+
 ## 0.4.0
 * Use haskell-completion-backend service
 * Add message on multiple backends and none selected
