@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "fuzzaldrin": "^2.1.0",
-    "atom-backend-helper": "^0.0.3"
+    "atom-backend-helper": "^0.0.4"
   },
   "providedServices": {
     "autocomplete.provider": {
