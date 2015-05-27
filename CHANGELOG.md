@@ -1,3 +1,6 @@
+## 0.4.2
+* Set inclusionPriority=0
+
 ## 0.4.1
 * atom-backend-helper version bump
 
