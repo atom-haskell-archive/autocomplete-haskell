@@ -35,8 +35,7 @@ module.exports = AutocompleteHaskell =
   autocompleteProvider_2_0_0: () ->
     selector: '.source.haskell'
     disableForSelector: '.source.haskell .comment'
-    inclusionPriority: 1
-    excludeLowerPriority: false
+    inclusionPriority: 0
     getSuggestions: (options) =>
       (new SuggestionBuilder options, @backend).getSuggestions()
 
