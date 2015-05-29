@@ -1,3 +1,6 @@
+## 0.4.3
+* Deactivation fix
+
 ## 0.4.2
 * Set inclusionPriority=0
 
