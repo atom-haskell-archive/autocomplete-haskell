@@ -39,6 +39,7 @@ module.exports = AutocompleteHaskell =
     disableForSelector: '.source.haskell .comment'
     inclusionPriority: 0
     getSuggestions: (options) =>
+      return [] unless @backend?
       (new SuggestionBuilder options, @backend).getSuggestions()
 
   consumeCompBack_0_1_0: (service) ->
