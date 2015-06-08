@@ -1,3 +1,6 @@
+## 0.4.4
+* Bail on completion if no backend
+
 ## 0.4.3
 * Deactivation fix
 
