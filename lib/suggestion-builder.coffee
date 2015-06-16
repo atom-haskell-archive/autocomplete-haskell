@@ -28,8 +28,7 @@ class SuggestionBuilder
 
   isIn: (scope) ->
     scope.every (s1) =>
-      @options.scopeDescriptor.scopes.some (s) ->
-        s==s1
+      s1 in @options.scopeDescriptor.scopes
 
   getPrefix: (rx=/[\w.']+/) =>
     @lineSearch rx
