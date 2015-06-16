@@ -34,7 +34,7 @@ module.exports = AutocompleteHaskell =
     @backend = null
     @backendHelper = null
 
-  autocompleteProvider_2_0_0: () ->
+  autocompleteProvider_2_0_0: ->
     selector: '.source.haskell'
     disableForSelector: '.source.haskell .comment'
     inclusionPriority: 0
@@ -47,5 +47,5 @@ module.exports = AutocompleteHaskell =
       @disposables.dispose()
       @disposables = new CompositeDisposable
     @disposables.add atom.workspace.observeTextEditors (editor) =>
-      return unless editor.getGrammar().scopeName=="source.haskell"
+      return unless editor.getGrammar().scopeName == "source.haskell"
       @disposables.add(@backend.registerCompletionBuffer editor.getBuffer())

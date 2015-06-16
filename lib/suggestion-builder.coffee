@@ -14,15 +14,15 @@ class SuggestionBuilder
     'NOINLINE', 'ANN', 'LINE', 'RULES', 'SPECIALIZE', 'UNPACK', 'SOURCE'
   ]
 
-  constructor: (@options,@backend) ->
+  constructor: (@options, @backend) ->
     @buffer = @options.editor.getBuffer()
     @lineRange = new Range [0, @options.bufferPosition.row],
       @options.bufferPosition
 
-  lineSearch: (rx,idx=0) =>
-    res=""
-    @buffer.backwardsScanInRange rx, @lineRange, ({match,stop})->
-      res=match[idx]
+  lineSearch: (rx, idx = 0) =>
+    res = ""
+    @buffer.backwardsScanInRange rx, @lineRange, ({match, stop}) ->
+      res = match[idx]
       stop()
     res
 
@@ -30,7 +30,7 @@ class SuggestionBuilder
     scope.every (s1) =>
       s1 in @options.scopeDescriptor.scopes
 
-  getPrefix: (rx=/[\w.']+/) =>
+  getPrefix: (rx = /[\w.']+/) =>
     @lineSearch rx
 
   buildSymbolSuggestion: (s, prefix) ->
@@ -38,7 +38,7 @@ class SuggestionBuilder
     rightLabel: s.module?.name
     type: s.symbolType
     replacementPrefix: prefix
-    description: s.name+" :: "+s.typeSignature
+    description: s.name + " :: " + s.typeSignature
 
   buildSimpleSuggestion: (type, text, prefix, label) ->
     text: text
@@ -46,7 +46,7 @@ class SuggestionBuilder
     replacementPrefix: prefix
     rightLabel: label
 
-  processSuggestions: (f,p) =>
+  processSuggestions: (f, p) =>
     prefix = @getPrefix()
     f @buffer, prefix, @options.bufferPosition
       .then (symbols) -> symbols.map (s) -> p s, prefix
@@ -55,24 +55,24 @@ class SuggestionBuilder
     @processSuggestions f, @buildSymbolSuggestion
 
   moduleSuggestions: =>
-    @processSuggestions @backend.getCompletionsForModule, (s,prefix) =>
+    @processSuggestions @backend.getCompletionsForModule, (s, prefix) =>
       @buildSimpleSuggestion 'import', s, prefix
 
   preprocessorSuggestions: =>
-    kw=@lineSearch /\b(LANGUAGE|OPTIONS_GHC)\b/
-    prefix=@getPrefix()
+    kw = @lineSearch /\b(LANGUAGE|OPTIONS_GHC)\b/
+    prefix = @getPrefix()
     return [] unless kw?
-    label=''
-    if kw=='OPTIONS_GHC'
-      prefix=@getPrefix(/[\w-]+/)
-      label='GHC Flag'
-      f=@backend.getCompletionsForCompilerOptions
-    else if kw=='LANGUAGE'
-      label='Language'
-      f=@backend.getCompletionsForLanguagePragmas
+    label = ''
+    if kw == 'OPTIONS_GHC'
+      prefix = @getPrefix(/[\w-]+/)
+      label = 'GHC Flag'
+      f = @backend.getCompletionsForCompilerOptions
+    else if kw == 'LANGUAGE'
+      label = 'Language'
+      f = @backend.getCompletionsForLanguagePragmas
     else
-      label='Pragma'
-      f = (b,p) => Promise.resolve(filter @pragmaWords, p)
+      label = 'Pragma'
+      f = (b, p) => Promise.resolve(filter @pragmaWords, p)
 
     @processSuggestions f, (s, prefix) =>
       @buildSimpleSuggestion 'keyword', s, prefix, label
@@ -88,7 +88,7 @@ class SuggestionBuilder
       @preprocessorSuggestions()
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
-      if(@options.prefix=='_')
+      if(@options.prefix == '_')
         @symbolSuggestions @backend.getCompletionsForHole
       else
         @symbolSuggestions @backend.getCompletionsForSymbol
