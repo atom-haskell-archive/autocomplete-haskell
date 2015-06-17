@@ -43,9 +43,11 @@ module.exports = AutocompleteHaskell =
       (new SuggestionBuilder options, @backend).getSuggestions()
 
   consumeCompBack_0_1_0: (service) ->
-    @disposables.add atom.workspace.observeTextEditors (editor) =>
-      return unless editor.getGrammar().scopeName == "source.haskell"
-      @disposables.add service.registerCompletionBuffer editor.getBuffer()
-    @backendHelperDisp = @backendHelper.consume service, =>
-      @disposables.dispose()
-      @disposables = new CompositeDisposable
+    @backendHelperDisp = @backendHelper.consume service,
+      success: =>
+        @disposables.add atom.workspace.observeTextEditors (editor) =>
+          return unless editor.getGrammar().scopeName == "source.haskell"
+          @disposables.add service.registerCompletionBuffer editor.getBuffer()
+      dispose: =>
+        @disposables.dispose()
+        @disposables = new CompositeDisposable
