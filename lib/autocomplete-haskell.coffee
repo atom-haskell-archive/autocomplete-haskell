@@ -42,7 +42,7 @@ module.exports = AutocompleteHaskell =
       return [] unless @backend?
       (new SuggestionBuilder options, @backend).getSuggestions()
 
-  consumeCompBack_0_1_0: (service) ->
+  consumeCompBack: (service) ->
     @backendHelperDisp = @backendHelper.consume service,
       success: =>
         @disposables.add atom.workspace.observeTextEditors (editor) =>

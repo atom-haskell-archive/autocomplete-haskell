@@ -22,7 +22,8 @@
   "consumedServices": {
     "haskell-completion-backend": {
       "versions": {
-        "0.1.0": "consumeCompBack_0_1_0"
+        "0.1.0": "consumeCompBack",
+        "^1.0.0": "consumeCompBack"
       }
     }
   }
