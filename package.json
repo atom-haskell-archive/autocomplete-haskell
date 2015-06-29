@@ -1,7 +1,7 @@
 {
   "name": "autocomplete-haskell",
   "main": "./lib/autocomplete-haskell",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Autocomplete-plus provider for haskell",
   "repository": "https://github.com/atom-haskell/autocomplete-haskell",
   "license": "MIT",
