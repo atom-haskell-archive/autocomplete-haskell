@@ -1,3 +1,6 @@
+## 0.4.5
+* Support for haskell-ghc-mod 0.8.0
+
 ## 0.4.4
 * Bail on completion if no backend
 
