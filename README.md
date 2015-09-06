@@ -31,4 +31,14 @@ Atom packages:
 [1]: https://atom.io/packages/language-haskell
 [2]: https://atom.io/packages/haskell-ghc-mod
 
-![Screencast](https://raw.githubusercontent.com/lierdakil/autocomplete-haskell/master/screencast.gif)
+Autocompletion:
+
+![autocomplete](https://cloud.githubusercontent.com/assets/7275622/9704861/e4474ec4-54bc-11e5-92f4-84a3995e45cb.gif)
+
+Import autocompletion:
+
+![import](https://cloud.githubusercontent.com/assets/7275622/9704865/ff39f79a-54bc-11e5-9912-5fb2884b749b.gif)
+
+Hole autocompletion:
+
+![hole](https://cloud.githubusercontent.com/assets/7275622/9704873/0c4ea4bc-54bd-11e5-8ebb-67c8688e8a31.gif)
