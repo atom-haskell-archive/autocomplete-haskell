@@ -41,4 +41,4 @@ Import autocompletion:
 
 Hole autocompletion:
 
-![hole](https://cloud.githubusercontent.com/assets/7275622/9704873/0c4ea4bc-54bd-11e5-8ebb-67c8688e8a31.gif)
+![hole](https://cloud.githubusercontent.com/assets/7275622/9704890/5581ccae-54bd-11e5-8ec6-8aa289e5a099.gif)
