@@ -1,3 +1,6 @@
+## 0.5.1
+* Screencasts update
+
 ## 0.5.0
 * Allow for hole completion refinement
 
