@@ -25,6 +25,7 @@ default autocomplete-plus SymbolProvider.
 ## Dependencies
 
 Atom packages:
+
 * [language-haskell][1]
 * [haskell-ghc-mod][2]
 
