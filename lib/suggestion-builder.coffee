@@ -88,7 +88,7 @@ class SuggestionBuilder
       @preprocessorSuggestions()
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
-      if(@options.prefix == '_')
+      if @options.prefix.startsWith '_'
         @symbolSuggestions @backend.getCompletionsForHole
       else
         @symbolSuggestions @backend.getCompletionsForSymbol

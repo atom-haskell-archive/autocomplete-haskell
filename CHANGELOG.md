@@ -1,3 +1,6 @@
+## 0.5.0
+* Allow for hole completion refinement
+
 ## 0.4.5
 * Support for haskell-ghc-mod 0.8.0
 

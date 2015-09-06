@@ -6,7 +6,7 @@ It relies on scope names provided by [language-haskell][1] and `haskell-completi
 
 You can show auto-completions for hole `_`. This will try to find replacements
 based on type. It's no magic though, so if hole has some crazy type, it won't
-find anything.
+find anything. You can also refine hole completions based on name by using named holes, e.g. `_from`
 
 Current autocompletion scopes:
 
