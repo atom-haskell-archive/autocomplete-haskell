@@ -1,3 +1,6 @@
+## 0.6.0
+* Add a panel with last completion hint (https://github.com/atom-haskell/ide-haskell/issues/99)
+
 ## 0.5.1
 * Screencasts update
 
