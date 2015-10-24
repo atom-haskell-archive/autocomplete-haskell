@@ -1,0 +1,10 @@
+'menu': [
+    'label': 'Haskell IDE'
+    'submenu': [
+      # 'label': 'Autocomplete Haskell'
+      # 'submenu': [
+          'label': 'Toggle Completion Hint Panel'
+          'command': 'autocomplete-haskell:toggle-completion-hint'
+      # ]
+    ]
+]
