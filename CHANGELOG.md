@@ -1,3 +1,6 @@
+## 0.6.1
+* Activate autocomplete-haskell only on Haskell files
+
 ## 0.6.0
 * Add a panel with last completion hint (https://github.com/atom-haskell/ide-haskell/issues/99)
 
