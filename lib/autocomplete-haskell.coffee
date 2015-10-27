@@ -32,10 +32,13 @@ module.exports = AutocompleteHaskell =
     @globalDisposables = new CompositeDisposable
     @globalDisposables.add @disposables
 
-    @panel = atom.workspace.addBottomPanel
-      item: @view = new LastSuggestionView
-      visible: state.panelVisible
-      priority: 200
+    @globalDisposables.add atom.packages.onDidActivatePackage (p) =>
+      return unless p.name is 'autocomplete-haskell'
+
+      @panel = atom.workspace.addBottomPanel
+        item: @view = new LastSuggestionView
+        visible: state.panelVisible
+        priority: 200
 
     @globalDisposables.add atom.commands.add 'atom-workspace',
       'autocomplete-haskell:toggle-completion-hint': =>
@@ -43,6 +46,17 @@ module.exports = AutocompleteHaskell =
           @panel.hide()
         else
           @panel.show()
+
+    @globalDisposables.add atom.menu.add [
+        'label': 'Haskell IDE'
+        'submenu': [
+          # 'label': 'Autocomplete Haskell'
+          # 'submenu': [
+              'label': 'Toggle Completion Hint Panel'
+              'command': 'autocomplete-haskell:toggle-completion-hint'
+          # ]
+        ]
+    ]
 
   serialize: ->
     panelVisible: @panel.isVisible()
