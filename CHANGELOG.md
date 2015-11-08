@@ -1,3 +1,6 @@
+## 0.6.2
+* Delayed hint panel grammar setting, use hint grammar
+
 ## 0.6.1
 * Activate autocomplete-haskell only on Haskell files
 
