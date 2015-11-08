@@ -5,10 +5,11 @@ class LastSuggestionView
     @element.setAttribute 'mini', true
     @element.removeAttribute 'tabindex'
     @editor = @element.getModel()
-    @editor.setGrammar atom.grammars.grammarForScopeName 'source.haskell'
 
   destroy: ->
     @element.remove()
 
   setText: (text) ->
+    unless @editor.getGrammar()?.scopeName is 'hint.haskell'
+      @editor.setGrammar atom.grammars.grammarForScopeName 'hint.haskell'
     @editor.setText text
