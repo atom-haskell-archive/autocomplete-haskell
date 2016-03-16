@@ -3,7 +3,7 @@
 
 module.exports=
 class SuggestionBuilder
-  typeScope: ['meta.function.type-declaration.haskell']
+  typeScope: ['meta.type-signature.haskell']
   sourceScope: ['source.haskell']
   moduleScope: ['meta.import.haskell', 'support.other.module.haskell']
   preprocessorScope: ['meta.preprocessor.haskell']
