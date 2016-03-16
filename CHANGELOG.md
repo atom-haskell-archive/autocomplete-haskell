@@ -1,3 +1,7 @@
+## 0.6.3
+* Match type scope on meta.type-signature.haskell
+* Add package keywords
+
 ## 0.6.2
 * Delayed hint panel grammar setting, use hint grammar
 
