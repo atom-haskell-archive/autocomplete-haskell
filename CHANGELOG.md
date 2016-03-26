@@ -1,3 +1,6 @@
+## 0.6.5
+* Fix preprocessorSuggestions
+
 ## 0.6.4
 * Updates for ac-p 2.25 and bugfixes
 * 'ingoreMinimumWordLengthForHoleCompletions' option to control hole completions on keystroke.
