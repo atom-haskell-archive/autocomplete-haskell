@@ -16,22 +16,25 @@ class SuggestionBuilder
 
   constructor: (@options, @backend) ->
     @buffer = @options.editor.getBuffer()
-    @lineRange = new Range [0, @options.bufferPosition.row],
+    @lineRange = new Range [@options.bufferPosition.row, 0],
       @options.bufferPosition
+    @line = @buffer.getTextInRange @lineRange
+    @mwl =
+      if @options.activatedManually
+        0
+      else
+        atom.config.get('autocomplete-plus.minimumWordLength')
 
   lineSearch: (rx, idx = 0) =>
-    res = ""
-    @buffer.backwardsScanInRange rx, @lineRange, ({match, stop}) ->
-      res = match[idx]
-      stop()
-    res
+    @line.match(rx)?[0] or ''
 
   isIn: (scope) ->
     scope.every (s1) =>
       s1 in @options.scopeDescriptor.scopes
 
-  getPrefix: (rx = /[\w.']+/) =>
-    @lineSearch rx
+  getPrefix: (rx = /[\w.']+$/) =>
+    prefix = @lineSearch rx
+    return prefix
 
   buildSymbolSuggestion: (s, prefix) ->
     text: s.qname ? s.name
@@ -46,8 +49,13 @@ class SuggestionBuilder
     replacementPrefix: prefix
     rightLabel: label
 
-  processSuggestions: (f, p) =>
-    prefix = @getPrefix()
+  processSuggestions: (f, rx, p) =>
+    if typeof(rx) is 'function'
+      p = rx
+      rx = undefined
+    prefix = @getPrefix(rx)
+    if prefix.length < @mwl
+      return []
     f @buffer, prefix, @options.bufferPosition
       .then (symbols) -> symbols.map (s) -> p s, prefix
 
@@ -60,11 +68,11 @@ class SuggestionBuilder
 
   preprocessorSuggestions: =>
     kw = @lineSearch /\b(LANGUAGE|OPTIONS_GHC)\b/
-    prefix = @getPrefix()
     return [] unless kw?
     label = ''
+    rx = undefined
     if kw == 'OPTIONS_GHC'
-      prefix = @getPrefix(/[\w-]+/)
+      rx = /[\w-]+$/
       label = 'GHC Flag'
       f = @backend.getCompletionsForCompilerOptions
     else if kw == 'LANGUAGE'
@@ -74,7 +82,7 @@ class SuggestionBuilder
       label = 'Pragma'
       f = (b, p) => Promise.resolve(filter @pragmaWords, p)
 
-    @processSuggestions f, (s, prefix) =>
+    @processSuggestions f, rx, (s, prefix) =>
       @buildSimpleSuggestion 'keyword', s, prefix, label
 
   getSuggestions: =>
@@ -88,7 +96,9 @@ class SuggestionBuilder
       @preprocessorSuggestions()
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
-      if @options.prefix.startsWith '_'
+      if @getPrefix().startsWith '_'
+        if atom.config.get('autocomplete-haskell.ingoreMinimumWordLengthForHoleCompletions')
+          @mwl = 1
         @symbolSuggestions @backend.getCompletionsForHole
       else
         @symbolSuggestions @backend.getCompletionsForSymbol

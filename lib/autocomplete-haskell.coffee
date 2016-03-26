@@ -15,6 +15,11 @@ module.exports = AutocompleteHaskell =
       default: ''
       description: 'Name of backend to use. Leave empty for any. Consult
                     backend provider documentation for name.'
+    ingoreMinimumWordLengthForHoleCompletions:
+      type: 'boolean'
+      default: 'true'
+      description: 'If enabled, hole completions will be shown on \'_\' keystroke.
+                    Otherwise, only when there is a prefix, e.g. \'_something\''
 
   backend: null
   disposables: null
