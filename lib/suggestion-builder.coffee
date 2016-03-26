@@ -33,8 +33,7 @@ class SuggestionBuilder
       s1 in @options.scopeDescriptor.scopes
 
   getPrefix: (rx = /[\w.']+$/) =>
-    prefix = @lineSearch rx
-    return prefix
+    @lineSearch rx
 
   buildSymbolSuggestion: (s, prefix) ->
     text: s.qname ? s.name
@@ -67,20 +66,23 @@ class SuggestionBuilder
       @buildSimpleSuggestion 'import', s, prefix
 
   preprocessorSuggestions: =>
-    kw = @lineSearch /\b(LANGUAGE|OPTIONS_GHC)\b/
-    return [] unless kw?
+    kwrx = new RegExp "\\b(#{@pragmaWords.join('|')})\\b"
+    kw = @lineSearch kwrx
     label = ''
     rx = undefined
-    if kw == 'OPTIONS_GHC'
-      rx = /[\w-]+$/
-      label = 'GHC Flag'
-      f = @backend.getCompletionsForCompilerOptions
-    else if kw == 'LANGUAGE'
-      label = 'Language'
-      f = @backend.getCompletionsForLanguagePragmas
-    else
-      label = 'Pragma'
-      f = (b, p) => Promise.resolve(filter @pragmaWords, p)
+    switch
+      when kw is 'OPTIONS_GHC'
+        rx = /[\w-]+$/
+        label = 'GHC Flag'
+        f = @backend.getCompletionsForCompilerOptions
+      when kw is 'LANGUAGE'
+        label = 'Language'
+        f = @backend.getCompletionsForLanguagePragmas
+      when not kw
+        label = 'Pragma'
+        f = (b, p) => Promise.resolve(filter @pragmaWords, p)
+      else
+        return []
 
     @processSuggestions f, rx, (s, prefix) =>
       @buildSimpleSuggestion 'keyword', s, prefix, label
