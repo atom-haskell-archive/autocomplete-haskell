@@ -1,3 +1,7 @@
+## 0.6.4
+* Updates for ac-p 2.25 and bugfixes
+* 'ingoreMinimumWordLengthForHoleCompletions' option to control hole completions on keystroke.
+
 ## 0.6.3
 * Match type scope on meta.type-signature.haskell
 * Add package keywords
