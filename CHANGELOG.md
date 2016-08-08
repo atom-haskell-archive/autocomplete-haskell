@@ -1,3 +1,6 @@
+## 0.6.6
+* Support instance overlap pragmas
+
 ## 0.6.5
 * Fix preprocessorSuggestions
 
