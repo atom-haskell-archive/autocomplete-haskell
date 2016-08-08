@@ -7,11 +7,19 @@ class SuggestionBuilder
   sourceScope: ['source.haskell']
   moduleScope: ['meta.import.haskell', 'support.other.module.haskell']
   preprocessorScope: ['meta.preprocessor.haskell']
+  instancePreprocessorScope: ['meta.declaration.instance.haskell', 'meta.preprocessor.haskell']
   exportsScope: ['meta.import.haskell', 'meta.declaration.exports.haskell']
 
   pragmaWords: [
     'LANGUAGE', 'OPTIONS_GHC', 'INCLUDE', 'WARNING', 'DEPRECATED', 'INLINE',
     'NOINLINE', 'ANN', 'LINE', 'RULES', 'SPECIALIZE', 'UNPACK', 'SOURCE'
+  ]
+
+  instancePragmaWords: [
+    'INCOHERENT'
+    'OVERLAPPABLE'
+    'OVERLAPPING'
+    'OVERLAPS'
   ]
 
   constructor: (@options, @backend) ->
@@ -65,8 +73,8 @@ class SuggestionBuilder
     @processSuggestions @backend.getCompletionsForModule, (s, prefix) =>
       @buildSimpleSuggestion 'import', s, prefix
 
-  preprocessorSuggestions: =>
-    kwrx = new RegExp "\\b(#{@pragmaWords.join('|')})\\b"
+  preprocessorSuggestions: (pragmaList) =>
+    kwrx = new RegExp "\\b(#{pragmaList.join('|')})\\b"
     kw = @lineSearch kwrx
     label = ''
     rx = undefined
@@ -80,7 +88,7 @@ class SuggestionBuilder
         f = @backend.getCompletionsForLanguagePragmas
       when not kw
         label = 'Pragma'
-        f = (b, p) => Promise.resolve(filter @pragmaWords, p)
+        f = (b, p) -> Promise.resolve(filter pragmaList, p)
       else
         return []
 
@@ -88,14 +96,16 @@ class SuggestionBuilder
       @buildSimpleSuggestion 'keyword', s, prefix, label
 
   getSuggestions: =>
-    if @isIn(@typeScope)
+    if @isIn(@instancePreprocessorScope)
+      @preprocessorSuggestions(@instancePragmaWords)
+    else if @isIn(@typeScope)
       @symbolSuggestions @backend.getCompletionsForType
     else if @isIn(@moduleScope)
       @moduleSuggestions()
     else if @isIn(@exportsScope)
       @symbolSuggestions @backend.getCompletionsForSymbolInModule
     else if @isIn(@preprocessorScope)
-      @preprocessorSuggestions()
+      @preprocessorSuggestions(@pragmaWords)
     #should be last as least sepcialized
     else if @isIn(@sourceScope)
       if @getPrefix().startsWith '_'
