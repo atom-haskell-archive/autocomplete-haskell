@@ -1,7 +1,7 @@
 {
   "name": "autocomplete-haskell",
   "main": "./lib/autocomplete-haskell",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "Autocomplete-plus provider for haskell",
   "keywords": [
     "ide-haskell",
