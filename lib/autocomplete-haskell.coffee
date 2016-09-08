@@ -20,6 +20,10 @@ module.exports = AutocompleteHaskell =
       default: 'true'
       description: 'If enabled, hole completions will be shown on \'_\' keystroke.
                     Otherwise, only when there is a prefix, e.g. \'_something\''
+    defaultHintPanelVisibility:
+      type: 'string'
+      default: 'Visible'
+      enum: ['Visible', 'Hidden']
 
   backend: null
   disposables: null
@@ -42,7 +46,8 @@ module.exports = AutocompleteHaskell =
 
       @panel = atom.workspace.addBottomPanel
         item: @view = new LastSuggestionView
-        visible: state.panelVisible
+        visible:
+          state.panelVisible ? (atom.config.get('autocomplete-haskell.defaultHintPanelVisibility') is 'Visible')
         priority: 200
 
     @globalDisposables.add atom.commands.add 'atom-workspace',
