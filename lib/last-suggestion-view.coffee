@@ -13,3 +13,6 @@ class LastSuggestionView
     unless @editor.getGrammar()?.scopeName is 'hint.haskell'
       @editor.setGrammar atom.grammars.grammarForScopeName 'hint.haskell'
     @editor.setText text
+
+  getText: ->
+    @editor.getText()
