@@ -1,3 +1,9 @@
+## 0.7.0
+* hideHintPanelIfEmpty, remove old workarounds
+* Atom version bump
+* Fix LICENSE date
+* Update LICENSE
+
 ## 0.6.7
 * Add option for default hint panel visibility
 
