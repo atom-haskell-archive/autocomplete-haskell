@@ -1,3 +1,6 @@
+## 0.7.1
+* Fix keybinding deactivation
+
 ## 0.7.0
 * hideHintPanelIfEmpty, remove old workarounds
 * Atom version bump
