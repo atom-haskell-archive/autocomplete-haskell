@@ -97,6 +97,7 @@ module.exports = AutocompleteHaskell =
   deactivate: ->
     @backendHelperDisp?.dispose()
     @globalDisposables.dispose()
+    atom.keymaps.removeBindingsFromSource 'autocomplete-haskell'
     @disposables = null
     @globalDisposables = null
     @backendHelper = null
