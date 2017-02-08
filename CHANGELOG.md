@@ -1,3 +1,6 @@
+## 0.7.2
+* Use atom-highlight for completion hint panel
+
 ## 0.7.1
 * Fix keybinding deactivation
 
