@@ -35,6 +35,12 @@
         "0.1.0": "consumeCompBack",
         "^1.0.0": "consumeCompBack"
       }
+    },
+    "ide-haskell-upi": {
+      "description": "Uses ide-haskell's unified pluggable interface",
+      "versions": {
+        "~0.2.1": "consumeUPI"
+      }
     }
   }
 }

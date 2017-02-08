@@ -31,6 +31,13 @@ module.exports = AutocompleteHaskell =
       Hide hint panel if it's empty. Also enables 'escape' key
       to hide it.
       '''
+    showIdeHaskellTooltip:
+      type: 'boolean'
+      default: false
+      description: '''
+      Show ide-haskell tooltip with last completion type
+      '''
+
 
   backend: null
   disposables: null
@@ -101,6 +108,7 @@ module.exports = AutocompleteHaskell =
     @disposables = null
     @globalDisposables = null
     @backendHelper = null
+    @upi = null
     @destroyPanel()
 
   createPanel: ->
@@ -127,10 +135,44 @@ module.exports = AutocompleteHaskell =
           @view.setText "#{suggestion.description}"
           if atom.config.get('autocomplete-haskell.hideHintPanelIfEmpty')
             @panel.show()
+          if @upi? and atom.config.get('autocomplete-haskell.showIdeHaskellTooltip')
+            @upi.showTooltip
+              editor: editor
+              pos: triggerPosition
+              eventType: 'keyboard'
+              tooltip: (crange) ->
+                {Range} = require 'atom'
+
+                beginningOfWordPosition = triggerPosition
+                editor.backwardsScanInBufferRange /[\w'.]+/, new Range([0, 0], triggerPosition),
+                  ({range, stop}) ->
+                    if range.end.isGreaterThanOrEqual(triggerPosition)
+                      beginningOfWordPosition = range.start
+                    if not beginningOfWordPosition?.isEqual(triggerPosition)
+                      stop()
+                endOfWordPosition = triggerPosition
+                editor.scanInBufferRange (/[\w'.]+/), new Range(triggerPosition, editor.getEofBufferPosition()),
+                  ({range, stop}) ->
+                    if range.start.isLessThanOrEqual(triggerPosition)
+                      endOfWordPosition = range.end
+                    stop()
+
+                range: new Range(beginningOfWordPosition, endOfWordPosition)
+                persistOnCursorMove: true
+                text:
+                  text: suggestion.description
+                  highlighter: 'hint.haskell'
         else
           @view.setText ''
           if atom.config.get('autocomplete-haskell.hideHintPanelIfEmpty')
             @panel.hide()
+
+  consumeUPI: (service) ->
+    @upi = service.registerPlugin(@upiDisposables = new CompositeDisposable, 'autocomplete-haskell')
+    {Disposable} = require 'atom'
+    @upiDisposables.add new Disposable => @upi = null
+    @globalDisposables.add @upiDisposables
+    @upiDisposables
 
   consumeCompBack: (service) ->
     @backendHelperDisp = @backendHelper.consume service,
