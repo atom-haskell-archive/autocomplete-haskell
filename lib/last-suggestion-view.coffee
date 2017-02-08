@@ -1,18 +1,24 @@
 module.exports =
 class LastSuggestionView
   constructor: ->
-    @[0] = @element = document.createElement 'atom-text-editor'
-    @element.setAttribute 'mini', true
-    @element.removeAttribute 'tabindex'
-    @editor = @element.getModel()
+    @[0] = @element = document.createElement 'div'
+    {CompositeDisposable} = require 'atom'
+    @disposables = new CompositeDisposable
+    @disposables.add atom.config.observe 'editor.fontFamily', (val) =>
+      @element.style.fontFamily = val ? ''
+    @disposables.add atom.config.observe 'editor.fontSize', (val) =>
+      @element.style.fontSize = "#{val}px" ? ''
 
   destroy: ->
     @element.remove()
 
   setText: (text) ->
-    unless @editor.getGrammar()?.scopeName is 'hint.haskell'
-      @editor.setGrammar atom.grammars.grammarForScopeName 'hint.haskell'
-    @editor.setText text
+    @element.innerHTML = require('atom-highlight')
+      fileContents: text
+      scopeName: 'hint.haskell'
+      nbsp: false
+      editorDiv: true
+      editorDivTag: 'autocomplete-haskell-hint'
 
   getText: ->
-    @editor.getText()
+    @element.innerText
