@@ -1,5 +1,7 @@
 # autocomplete-haskell atom package
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/atom-haskell/autocomplete-haskell.svg)](https://greenkeeper.io/)
+
 Autocomplete-haskell provides autocompletion facilities for your Haskell
 hacking.
 It relies on scope names provided by [language-haskell][1] and `haskell-completion-backend` service, provided by [haskell-ghc-mod][2]
