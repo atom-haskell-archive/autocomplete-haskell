@@ -19,7 +19,7 @@
     "language-haskell:grammar-used"
   ],
   "dependencies": {
-    "atom-backend-helper": "~1.1.0",
+    "atom-backend-helper": "~1.2.0",
     "atom-highlight": "^0.3.0",
     "fuzzaldrin": "^2.1.0"
   },
