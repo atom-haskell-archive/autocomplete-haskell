@@ -21,7 +21,7 @@ const instancePragmaWords = [
   'OVERLAPS'
 ]
 
-const operatorRx = /([\w.']+\.)?\(?([^'\w\s]+)\)?$/
+import {operatorRx} from './opertator-regex'
 
 export interface IOptions {
   editor: AtomTypes.TextEditor
