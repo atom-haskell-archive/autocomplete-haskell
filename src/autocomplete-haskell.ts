@@ -25,11 +25,15 @@ export {config} from './config'
 export function activate (state: IState) {
   disposables = new CompositeDisposable()
 
-  if (state.panelVisible || (atom.config.get('autocomplete-haskell.defaultHintPanelVisibility') === 'Visible')) {
-    createPanel()
+  if (state.panelVisible === undefined) {
+    state.panelVisible = (atom.config.get('autocomplete-haskell.defaultHintPanelVisibility') === 'Visible')
   }
 
   lastCompletionDesc = state.lastCompletionDesc
+
+  if (state.panelVisible) {
+    createPanel()
+  }
 
   disposables.add(atom.config.observe('autocomplete-haskell.hideHintPanelIfEmpty', (val) => {
     if (panel) {
