@@ -1,32 +1,37 @@
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
+import {CompositeDisposable} from 'atom'
+import highlight = require('atom-highlight')
+
 export class LastSuggestionView {
   public element: HTMLElement
-  private editor: AtomTypes.TextEditor
+  private disposables: CompositeDisposable
   constructor () {
-    this.element = document.createElement('atom-text-editor')
-    this.element.setAttribute('mini', '')
-    this.element.removeAttribute('tabindex')
-    this.editor = (this.element as any).getModel()
+    this.element = document.createElement('div')
+    this.disposables = new CompositeDisposable()
+    this.disposables.add(
+      atom.config.observe('editor.fontFamily', (val: string) => {
+        this.element.style.fontFamily = val ? val : ''
+      }),
+      atom.config.observe('editor.fontSize', (val: number) => {
+        this.element.style.fontSize = val ? `${val}px` : ''
+      })
+    )
   }
 
   public destroy () {
-    return this.element.remove()
+    this.element.remove()
   }
 
   public setText (text: string) {
-    const grammar = this.editor.getGrammar()
-    if (!grammar || grammar.scopeName !== 'hint.haskell') {
-      this.editor.setGrammar(atom.grammars.grammarForScopeName('hint.haskell'))
-    }
-    return this.editor.setText(text)
+    this.element.innerHTML = highlight({
+      fileContents: text,
+      scopeName: 'hint.haskell',
+      nbsp: false,
+      editorDiv: true,
+      editorDivTag: 'autocomplete-haskell-hint'
+    })
   }
 
   public getText () {
-    return this.editor.getText()
+    return this.element.innerText
   }
 }
