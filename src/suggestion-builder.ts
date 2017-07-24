@@ -1,6 +1,6 @@
 import {Range} from 'atom'
 import {filter} from 'fuzzaldrin'
-import {ICompletionBackend, ISymbol, SymbolType} from '../typings/completion-backend'
+import CB = UPI.CompletionBackend
 
 const typeScope = ['meta.type-signature.haskell']
 const sourceScope = ['source.haskell']
@@ -31,7 +31,7 @@ export interface IOptions {
 export interface ISuggestion {
   text: string
   rightLabel?: string
-  type: SymbolType | 'import' | 'keyword'
+  type: CB.SymbolType | 'import' | 'keyword'
   replacementPrefix: string
   description?: string
 }
@@ -43,7 +43,7 @@ export class SuggestionBuilder {
   private lineRange: AtomTypes.Range
   private line: string
   private mwl: number
-  constructor (private options: IOptions, private backend: ICompletionBackend) {
+  constructor (private options: IOptions, private backend: CB.ICompletionBackend) {
     this.buffer = this.options.editor.getBuffer()
     this.lineRange = new Range(
       [this.options.bufferPosition.row, 0],
@@ -101,7 +101,7 @@ export class SuggestionBuilder {
     return this.lineSearch(rx)
   }
 
-  private buildSymbolSuggestion (s: ISymbol, prefix: string): ISuggestion {
+  private buildSymbolSuggestion (s: CB.ISymbol, prefix: string): ISuggestion {
     return {
       text: s.qname ? s.qname : s.name,
       rightLabel: (s.module ? s.module.name : undefined),
@@ -133,7 +133,7 @@ export class SuggestionBuilder {
     return symbols.map((s) => p(s, prefix))
   }
 
-  private async symbolSuggestions (f: GetSymbolsCallback<ISymbol>) {
+  private async symbolSuggestions (f: GetSymbolsCallback<CB.ISymbol>) {
     return this.processSuggestions(f, undefined, this.buildSymbolSuggestion.bind(this))
   }
 

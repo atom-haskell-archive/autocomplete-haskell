@@ -1,9 +1,8 @@
 import {CompositeDisposable, Disposable} from 'atom'
 import {SuggestionBuilder, IOptions, ISuggestion} from './suggestion-builder'
 import {LastSuggestionView} from './last-suggestion-view'
-import {ICompletionBackend} from '../typings/completion-backend'
 
-let backend: ICompletionBackend | undefined
+let backend: UPI.CompletionBackend.ICompletionBackend | undefined
 let disposables: CompositeDisposable | undefined
 let panel: AtomTypes.Panel | undefined
 let upi: UPI.IUPIInstance | undefined
@@ -160,7 +159,7 @@ export function consumeUPI (service: UPI.IUPIRegistration) {
   return upi
 }
 
-export function consumeCompBack (service: ICompletionBackend) {
+export function consumeCompBack (service: UPI.CompletionBackend.ICompletionBackend) {
   backend = service
   const mydisp = new CompositeDisposable()
   disposables && disposables.add(mydisp)
