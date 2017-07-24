@@ -4,7 +4,7 @@ import highlight = require('atom-highlight')
 export class LastSuggestionView {
   public element: HTMLElement
   private disposables: CompositeDisposable
-  constructor () {
+  constructor (text?: string) {
     this.element = document.createElement('div')
     this.disposables = new CompositeDisposable()
     this.disposables.add(
@@ -15,6 +15,7 @@ export class LastSuggestionView {
         this.element.style.fontSize = val ? `${val}px` : ''
       })
     )
+    text && this.setText(text)
   }
 
   public destroy () {
@@ -29,9 +30,5 @@ export class LastSuggestionView {
       editorDiv: true,
       editorDivTag: 'autocomplete-haskell-hint'
     })
-  }
-
-  public getText () {
-    return this.element.innerText
   }
 }

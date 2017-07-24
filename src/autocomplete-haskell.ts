@@ -7,9 +7,11 @@ let backend: ICompletionBackend | undefined
 let disposables: CompositeDisposable | undefined
 let panel: AtomTypes.Panel | undefined
 let upi: UPI.IUPIInstance | undefined
+let lastCompletionDesc: string | undefined
 
 interface IState {
   panelVisible?: boolean
+  lastCompletionDesc: string | undefined
 }
 
 interface IACPDidInsertEventParams {
@@ -27,9 +29,11 @@ export function activate (state: IState) {
     createPanel()
   }
 
+  lastCompletionDesc = state.lastCompletionDesc
+
   disposables.add(atom.config.observe('autocomplete-haskell.hideHintPanelIfEmpty', (val) => {
     if (panel) {
-      !val || (panel.getItem() as LastSuggestionView).getText() ? panel.show() : panel.hide()
+      !val || lastCompletionDesc ? panel.show() : panel.hide()
     }
   }))
 
@@ -70,7 +74,10 @@ export function activate (state: IState) {
 }
 
 export function serialize (): IState {
-  return { panelVisible: !!panel }
+  return {
+    panelVisible: !!panel,
+    lastCompletionDesc
+  }
 }
 
 export function deactivate () {
@@ -82,7 +89,7 @@ export function deactivate () {
 
 function createPanel () {
   panel = atom.workspace.addBottomPanel({
-    item: new LastSuggestionView(),
+    item: new LastSuggestionView(lastCompletionDesc),
     visible: true,
     priority: 200
   })
@@ -104,7 +111,7 @@ export function autocompleteProvider_2_0_0 () {
     },
     onDidInsertSuggestion: ({editor, triggerPosition, suggestion}: IACPDidInsertEventParams) => {
       if (suggestion && suggestion.description) {
-        const desc = suggestion.description
+        const desc = lastCompletionDesc = suggestion.description
         if (panel) {
           const view: LastSuggestionView = panel.getItem()
           view.setText(desc)
