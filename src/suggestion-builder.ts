@@ -21,6 +21,8 @@ const instancePragmaWords = [
   'OVERLAPS'
 ]
 
+const operatorRx = /([\w.']+\.)?\(?([^'\w\s]+)\)?$/
+
 export interface IOptions {
   editor: AtomTypes.TextEditor
   bufferPosition: AtomTypes.Point
@@ -75,6 +77,8 @@ export class SuggestionBuilder {
           this.mwl = 1
         }
         return this.symbolSuggestions(this.backend.getCompletionsForHole.bind(this.backend))
+      } else if (this.getPrefix() === '' && this.getPrefix(operatorRx) !== '') {
+        return this.operatorSuggestions()
       } else {
         return this.symbolSuggestions(this.backend.getCompletionsForSymbol.bind(this.backend))
       }
@@ -86,9 +90,9 @@ export class SuggestionBuilder {
   private lineSearch (rx: RegExp, idx: number = 0) {
     const match = this.line.match(rx)
     if (match) {
-      return match[0]
+      return match
     } else {
-      return ''
+      return ['']
     }
   }
 
@@ -98,7 +102,7 @@ export class SuggestionBuilder {
 
   private getPrefix (rx?: RegExp) {
     if (!rx) { rx = /[\w.']+$/ }
-    return this.lineSearch(rx)
+    return this.lineSearch(rx)[0]
   }
 
   private buildSymbolSuggestion (s: CB.ISymbol, prefix: string): ISuggestion {
@@ -133,8 +137,8 @@ export class SuggestionBuilder {
     return symbols.map((s) => p(s, prefix))
   }
 
-  private async symbolSuggestions (f: GetSymbolsCallback<CB.ISymbol>) {
-    return this.processSuggestions(f, undefined, this.buildSymbolSuggestion.bind(this))
+  private async symbolSuggestions (f: GetSymbolsCallback<CB.ISymbol>, rx?: RegExp) {
+    return this.processSuggestions(f, rx, this.buildSymbolSuggestion.bind(this))
   }
 
   private async moduleSuggestions () {
@@ -145,7 +149,7 @@ export class SuggestionBuilder {
   private preprocessorSuggestions (pragmaList: string[]) {
     let f: GetSymbolsCallback<string>
     const kwrx = new RegExp(`\\b(${pragmaList.join('|')})\\b`)
-    const kw = this.lineSearch(kwrx)
+    const kw = this.lineSearch(kwrx)[0]
     let label = ''
     let rx
     switch (false) {
@@ -168,5 +172,27 @@ export class SuggestionBuilder {
 
     return this.processSuggestions(f, rx, (s, prefix) =>
       this.buildSimpleSuggestion('keyword', s, prefix, label))
+  }
+
+  private async operatorSuggestions () {
+    const prefixMatch = this.lineSearch(operatorRx)
+    if (!prefixMatch) { return [] }
+    const [mod, op] = prefixMatch.slice(1)
+    if (prefixMatch[0].length < this.mwl) {
+      return []
+    }
+    const mkQName = (sym: CB.ISymbol) => {
+      const {name, qname} = sym
+      const newQName = qname.slice(0, -name.length) + name.slice(1, -1)
+      return {...sym, qname: newQName}
+    }
+    const symbols =
+      await this.backend.getCompletionsForSymbol(this.buffer, `${mod || ''}(${op}`, this.options.bufferPosition)
+    const newSyms =
+      symbols
+      .filter(({symbolType}) => symbolType === 'operator')
+      .map(mkQName)
+    const allSyms = filter(symbols.concat(newSyms), prefixMatch[0], {key: 'qname'})
+    return allSyms.map((s) => this.buildSymbolSuggestion(s, prefixMatch[0]))
   }
 }
