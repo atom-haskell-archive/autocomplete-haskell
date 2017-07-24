@@ -13,14 +13,13 @@
   "repository": "https://github.com/atom-haskell/autocomplete-haskell",
   "license": "MIT",
   "engines": {
-    "atom": ">=1.13.0 <2.0.0"
+    "atom": ">=1.19.0 <2.0.0"
   },
   "activationHooks": [
     "language-haskell:grammar-used"
   ],
   "dependencies": {
-    "fuzzaldrin": "^2.1.0",
-    "atom-backend-helper": "~1.1.0"
+    "fuzzaldrin": "^2.1.0"
   },
   "providedServices": {
     "autocomplete.provider": {
@@ -39,8 +38,13 @@
     "ide-haskell-upi": {
       "description": "Uses ide-haskell's unified pluggable interface",
       "versions": {
-        "~0.2.1": "consumeUPI"
+        "^0.3.0": "consumeUPI"
       }
     }
+  },
+  "devDependencies": {
+    "@types/fuzzaldrin": "^2.1.0",
+    "atom-haskell-utils": "^1.0.0",
+    "typescript": "^2.4.2"
   }
 }
