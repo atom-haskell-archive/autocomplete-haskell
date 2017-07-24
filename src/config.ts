@@ -12,7 +12,7 @@ Otherwise, only when there is a prefix, e.g. \'_something\'`
   },
   hideHintPanelIfEmpty: {
     type: 'boolean',
-    default: false,
+    default: true,
     description: `\
 Hide hint panel if it's empty. Also enables 'escape' key
 to hide it.\
