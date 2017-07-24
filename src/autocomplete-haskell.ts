@@ -1,10 +1,3 @@
-/*
- * decaffeinate suggestions:
- * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import {CompositeDisposable, Disposable} from 'atom'
 import {SuggestionBuilder, IOptions, ISuggestion} from './suggestion-builder'
 import {LastSuggestionView} from './last-suggestion-view'
@@ -16,7 +9,7 @@ let panel: AtomTypes.Panel | undefined
 let upi: UPI.IUPIInstance | undefined
 
 interface IState {
-  panelVisible?: 'Visible' | 'Hidden'
+  panelVisible?: boolean
 }
 
 interface IACPDidInsertEventParams {
@@ -25,47 +18,26 @@ interface IACPDidInsertEventParams {
   suggestion: ISuggestion
 }
 
+export {config} from './config'
+
 export function activate (state: IState) {
-  // backendHelper = new BackendHelper('autocomplete-haskell', {
-  //   main: AutocompleteHaskell,
-  //   backendInfo: 'completionBackendInfo',
-  //   backendName: 'haskell-completion-backend'
-  // }
-  // );
-
-  // backendHelper.init();
-
   disposables = new CompositeDisposable()
 
-  createPanel((state.panelVisible || atom.config.get('autocomplete-haskell.defaultHintPanelVisibility')) === 'Visible')
+  if (state.panelVisible || (atom.config.get('autocomplete-haskell.defaultHintPanelVisibility') === 'Visible')) {
+    createPanel()
+  }
 
   disposables.add(atom.config.observe('autocomplete-haskell.hideHintPanelIfEmpty', (val) => {
-    if (panel != null) {
-      if (val) {
-        if ((panel.getItem() as LastSuggestionView).getText()) {
-          return panel.show()
-        } else {
-          return panel.hide()
-        }
-      } else {
-        return panel.show()
-      }
+    if (panel) {
+      !val || (panel.getItem() as LastSuggestionView).getText() ? panel.show() : panel.hide()
     }
-  })
-  )
-
-  atom.keymaps.add('autocomplete-haskell', {
-    'atom-text-editor[data-grammar~="haskell"]': {
-      escape: 'autocomplete-haskell:conceal-hint-panel'
-    }
-  }
-  )
+  }))
 
   disposables.add(
     atom.commands.add('atom-text-editor[data-grammar~="haskell"]', {
       'autocomplete-haskell:conceal-hint-panel': ({currentTarget, abortKeyBinding}: IEventDesc) => {
         if (panel && panel.isVisible() && atom.config.get('autocomplete-haskell.hideHintPanelIfEmpty')) {
-          return panel.hide()
+          panel.hide()
         } else {
           if (typeof abortKeyBinding === 'function') {
             abortKeyBinding()
@@ -78,10 +50,10 @@ export function activate (state: IState) {
 
   disposables.add(atom.commands.add('atom-workspace', {
     'autocomplete-haskell:toggle-completion-hint': () => {
-      if (panel != null) {
-        return destroyPanel()
+      if (panel) {
+        destroyPanel()
       } else {
-        return createPanel(true)
+        createPanel()
       }
     }
   }
@@ -97,22 +69,21 @@ export function activate (state: IState) {
   }]))
 }
 
-export function serialize () {
-  return {panelVisible: (panel != null)}
+export function serialize (): IState {
+  return { panelVisible: !!panel }
 }
 
 export function deactivate () {
   disposables && disposables.dispose()
-  atom.keymaps.removeBindingsFromSource('autocomplete-haskell')
   disposables = undefined
   upi = undefined
   destroyPanel()
 }
 
-function createPanel (visible: boolean) {
-  return panel = atom.workspace.addBottomPanel({
+function createPanel () {
+  panel = atom.workspace.addBottomPanel({
     item: new LastSuggestionView(),
-    visible,
+    visible: true,
     priority: 200
   })
 }
@@ -128,7 +99,7 @@ export function autocompleteProvider_2_0_0 () {
     disableForSelector: '.source.haskell .comment',
     inclusionPriority: 0,
     getSuggestions: (options: IOptions) => {
-      if (backend == null) { return [] }
+      if (!backend) { return [] }
       return (new SuggestionBuilder(options, backend)).getSuggestions()
     },
     onDidInsertSuggestion: ({editor, triggerPosition, suggestion}: IACPDidInsertEventParams) => {
@@ -162,8 +133,8 @@ export function autocompleteProvider_2_0_0 () {
       } else if (panel) {
         const view: LastSuggestionView = panel.getItem()
         view.setText('')
-        if (panel != null && atom.config.get('autocomplete-haskell.hideHintPanelIfEmpty')) {
-          return panel.hide()
+        if (panel && atom.config.get('autocomplete-haskell.hideHintPanelIfEmpty')) {
+          panel.hide()
         }
       }
     }

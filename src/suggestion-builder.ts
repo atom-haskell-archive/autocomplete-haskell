@@ -1,12 +1,3 @@
-/*
- * decaffeinate suggestions:
- * DS101: Remove unnecessary use of Array.from
- * DS102: Remove unnecessary code created because of implicit returns
- * DS103: Rewrite code to no longer use __guard__
- * DS206: Consider reworking classes to avoid initClass
- * DS207: Consider shorter variations of null checks
- * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
- */
 import {Range} from 'atom'
 import {filter} from 'fuzzaldrin'
 import {ICompletionBackend, ISymbol, SymbolType} from '../typings/completion-backend'
@@ -106,14 +97,14 @@ export class SuggestionBuilder {
   }
 
   private getPrefix (rx?: RegExp) {
-    if (rx == null) { rx = /[\w.']+$/ }
+    if (!rx) { rx = /[\w.']+$/ }
     return this.lineSearch(rx)
   }
 
   private buildSymbolSuggestion (s: ISymbol, prefix: string): ISuggestion {
     return {
-      text: s.qname != null ? s.qname : s.name,
-      rightLabel: (s.module != null ? s.module.name : undefined),
+      text: s.qname ? s.qname : s.name,
+      rightLabel: (s.module ? s.module.name : undefined),
       type: s.symbolType,
       replacementPrefix: prefix,
       description: s.name + ' :: ' + s.typeSignature

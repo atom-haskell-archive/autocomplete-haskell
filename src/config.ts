@@ -1,16 +1,4 @@
 export const config = {
-  completionBackendInfo: {
-    type: 'boolean',
-    default: true,
-    description: `Show info message about haskell-completion-backend service \
-on activation`
-  },
-  useBackend: {
-    type: 'string',
-    default: '',
-    description: `Name of backend to use. Leave empty for any. Consult \
-backend provider documentation for name.`
-  },
   ingoreMinimumWordLengthForHoleCompletions: {
     type: 'boolean',
     default: 'true',

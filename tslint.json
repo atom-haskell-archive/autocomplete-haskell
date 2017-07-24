@@ -25,7 +25,7 @@
       "no-unnecessary-qualifier": true,
       "no-non-null-assertion": true,
       "no-switch-case-fall-through": true,
-      "no-null-keyword": false,
+      "no-null-keyword": true,
       "no-var-requires": true,
       "no-uninitialized-class-properties": true,
       "interface-name": false,
