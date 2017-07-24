@@ -1,10 +1,4 @@
 export const config = {
-  ingoreMinimumWordLengthForHoleCompletions: {
-    type: 'boolean',
-    default: 'true',
-    description: `If enabled, hole completions will be shown on \'_\' keystroke. \
-Otherwise, only when there is a prefix, e.g. \'_something\'`
-  },
   defaultHintPanelVisibility: {
     type: 'string',
     default: 'Visible',

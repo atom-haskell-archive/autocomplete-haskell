@@ -73,9 +73,6 @@ export class SuggestionBuilder {
     // should be last as least sepcialized
     } else if (this.isIn(sourceScope)) {
       if (this.getPrefix().startsWith('_')) {
-        if (atom.config.get('autocomplete-haskell.ingoreMinimumWordLengthForHoleCompletions')) {
-          this.mwl = 1
-        }
         return this.symbolSuggestions(this.backend.getCompletionsForHole.bind(this.backend))
       } else if (this.getPrefix() === '' && this.getPrefix(operatorRx) !== '') {
         return this.operatorSuggestions()
