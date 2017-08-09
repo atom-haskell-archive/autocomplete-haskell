@@ -1,3 +1,11 @@
+## 1.0.0
+* Suggest operators in completions
+* Hide hint panel by default
+* Optionally show completion hint as ide-haskell tooltips
+* Cleanup & minor fixes
+* Rewrite in TypeScript
+* Migrate to UPI 0.3
+
 ## 0.7.2
 * Use atom-highlight for completion hint panel
 
