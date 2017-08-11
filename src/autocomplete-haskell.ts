@@ -1,4 +1,4 @@
-import {CompositeDisposable, Disposable} from 'atom'
+import {IEventDesc, CompositeDisposable, Disposable} from 'atom'
 import {SuggestionBuilder, IOptions, ISuggestion} from './suggestion-builder'
 import {LastSuggestionView} from './last-suggestion-view'
 
