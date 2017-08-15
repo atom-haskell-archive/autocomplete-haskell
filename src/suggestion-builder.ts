@@ -108,7 +108,15 @@ export class SuggestionBuilder {
       rightLabel: (s.module ? s.module.name : undefined),
       type: s.symbolType,
       replacementPrefix: prefix,
-      description: s.name + ' :: ' + s.typeSignature
+      description: this.nameFix(s) + ' :: ' + s.typeSignature
+    }
+  }
+
+  private nameFix (s: CB.ISymbol) {
+    if (s.symbolType === 'operator') {
+      return `(${s.name})`
+    } else {
+      return s.name
     }
   }
 
@@ -178,17 +186,11 @@ export class SuggestionBuilder {
     if (prefixMatch[0].length < this.mwl) {
       return []
     }
-    const mkQName = (sym: CB.ISymbol) => {
-      const {name, qname} = sym
-      const newQName = qname.slice(0, -name.length) + name.slice(1, -1)
-      return {...sym, qname: newQName}
-    }
     const symbols =
-      await this.backend.getCompletionsForSymbol(this.buffer, `${mod || ''}(${op}`, this.options.bufferPosition)
+      await this.backend.getCompletionsForSymbol(this.buffer, `${mod || ''}${op}`, this.options.bufferPosition)
     const newSyms =
       symbols
       .filter(({symbolType}) => symbolType === 'operator')
-      .map(mkQName)
     const allSyms = filter(newSyms, prefixMatch[0], {key: 'qname'})
     return allSyms.map((s) => this.buildSymbolSuggestion(s, prefixMatch[0]))
   }
