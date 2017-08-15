@@ -1,3 +1,7 @@
+## 1.0.1
+* Unicode identifiers and operators properly supported via XRegExp
+* Parenthesized operators omitted from operator suggestions
+
 ## 1.0.0
 * Suggest operators in completions
 * Hide hint panel by default
