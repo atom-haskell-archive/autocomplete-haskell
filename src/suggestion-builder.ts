@@ -21,7 +21,7 @@ const instancePragmaWords = [
   'OVERLAPS'
 ]
 
-import {operatorRx} from './opertator-regex'
+import {operatorRx, identRx} from './opertator-regex'
 
 export interface IOptions {
   editor: AtomTypes.TextEditor
@@ -98,7 +98,7 @@ export class SuggestionBuilder {
   }
 
   private getPrefix (rx?: RegExp) {
-    if (!rx) { rx = /[\w.']+$/ }
+    if (!rx) { rx = identRx }
     return this.lineSearch(rx)[0]
   }
 
@@ -189,7 +189,7 @@ export class SuggestionBuilder {
       symbols
       .filter(({symbolType}) => symbolType === 'operator')
       .map(mkQName)
-    const allSyms = filter(symbols.concat(newSyms), prefixMatch[0], {key: 'qname'})
+    const allSyms = filter(newSyms, prefixMatch[0], {key: 'qname'})
     return allSyms.map((s) => this.buildSymbolSuggestion(s, prefixMatch[0]))
   }
 }

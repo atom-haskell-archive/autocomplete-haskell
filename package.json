@@ -20,7 +20,8 @@
   ],
   "dependencies": {
     "atom-highlight": "^0.3.0",
-    "fuzzaldrin": "^2.1.0"
+    "fuzzaldrin": "^2.1.0",
+    "xregexp": "^3.2.0"
   },
   "providedServices": {
     "autocomplete.provider": {
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@types/fuzzaldrin": "^2.1.0",
+    "@types/xregexp": "^3.0.29",
     "atom-haskell-utils": "^1.0.0",
     "typescript": "^2.4.2"
   }
