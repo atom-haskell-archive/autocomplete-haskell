@@ -2,7 +2,7 @@ export const config = {
   defaultHintPanelVisibility: {
     type: 'string',
     default: 'Visible',
-    enum: ['Visible', 'Hidden']
+    enum: ['Visible', 'Hidden'],
   },
   hideHintPanelIfEmpty: {
     type: 'boolean',
@@ -10,13 +10,13 @@ export const config = {
     description: `\
 Hide hint panel if it's empty. Also enables 'escape' key
 to hide it.\
-`
+`,
   },
   showIdeHaskellTooltip: {
     type: 'boolean',
     default: false,
     description: `\
 Show ide-haskell tooltip with last completion type\
-`
-  }
+`,
+  },
 }

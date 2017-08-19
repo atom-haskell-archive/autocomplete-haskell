@@ -1,6 +1,6 @@
-import {IEventDesc, CompositeDisposable, Disposable} from 'atom'
-import {SuggestionBuilder, IOptions, ISuggestion} from './suggestion-builder'
-import {LastSuggestionView} from './last-suggestion-view'
+import { IEventDesc, CompositeDisposable, Disposable } from 'atom'
+import { SuggestionBuilder, IOptions, ISuggestion } from './suggestion-builder'
+import { LastSuggestionView } from './last-suggestion-view'
 
 let backend: UPI.CompletionBackend.ICompletionBackend | undefined
 let disposables: CompositeDisposable | undefined
@@ -19,9 +19,9 @@ interface IACPDidInsertEventParams {
   suggestion: ISuggestion
 }
 
-export {config} from './config'
+export { config } from './config'
 
-export function activate (state: IState) {
+export function activate(state: IState) {
   disposables = new CompositeDisposable()
 
   if (state.panelVisible === undefined) {
@@ -42,7 +42,7 @@ export function activate (state: IState) {
 
   disposables.add(
     atom.commands.add('atom-text-editor[data-grammar~="haskell"]', {
-      'autocomplete-haskell:conceal-hint-panel': ({currentTarget, abortKeyBinding}: IEventDesc) => {
+      'autocomplete-haskell:conceal-hint-panel': ({ currentTarget, abortKeyBinding }: IEventDesc) => {
         if (panel && panel.isVisible() && atom.config.get('autocomplete-haskell.hideHintPanelIfEmpty')) {
           panel.hide()
         } else {
@@ -50,9 +50,9 @@ export function activate (state: IState) {
             abortKeyBinding()
           }
         }
-      }
-    }
-    )
+      },
+    },
+  ),
   )
 
   disposables.add(atom.commands.add('atom-workspace', {
@@ -62,48 +62,48 @@ export function activate (state: IState) {
       } else {
         createPanel()
       }
-    }
-  }
-  )
+    },
+  },
+),
   )
 
   disposables.add(atom.menu.add([{
     label: 'Haskell IDE',
     submenu: [{
-        label: 'Toggle Completion Hint Panel',
-        command: 'autocomplete-haskell:toggle-completion-hint'
-    }]
+      label: 'Toggle Completion Hint Panel',
+      command: 'autocomplete-haskell:toggle-completion-hint',
+    }],
   }]))
 }
 
-export function serialize (): IState {
+export function serialize(): IState {
   return {
     panelVisible: !!panel,
-    lastCompletionDesc
+    lastCompletionDesc,
   }
 }
 
-export function deactivate () {
+export function deactivate() {
   disposables && disposables.dispose()
   disposables = undefined
   upi = undefined
   destroyPanel()
 }
 
-function createPanel () {
+function createPanel() {
   panel = atom.workspace.addBottomPanel({
     item: new LastSuggestionView(lastCompletionDesc),
     visible: true,
-    priority: 200
+    priority: 200,
   })
 }
 
-function destroyPanel () {
+function destroyPanel() {
   panel && panel.destroy()
   panel = undefined
 }
 
-export function autocompleteProvider_2_0_0 () {
+export function autocompleteProvider_2_0_0() {
   return {
     selector: '.source.haskell',
     disableForSelector: '.source.haskell .comment',
@@ -112,7 +112,7 @@ export function autocompleteProvider_2_0_0 () {
       if (!backend) { return [] }
       return (new SuggestionBuilder(options, backend)).getSuggestions()
     },
-    onDidInsertSuggestion: ({editor, triggerPosition, suggestion}: IACPDidInsertEventParams) => {
+    onDidInsertSuggestion: ({ editor, triggerPosition, suggestion }: IACPDidInsertEventParams) => {
       if (suggestion && suggestion.description) {
         const desc = lastCompletionDesc = suggestion.description
         if (panel) {
@@ -134,9 +134,9 @@ export function autocompleteProvider_2_0_0 () {
                 persistent: true,
                 text: {
                   text: desc,
-                  highlighter: 'hint.haskell'
-                }
-              }
+                  highlighter: 'hint.haskell',
+                },
+              },
             })
           })
         }
@@ -147,19 +147,19 @@ export function autocompleteProvider_2_0_0 () {
           panel.hide()
         }
       }
-    }
+    },
   }
 }
 
-export function consumeUPI (service: UPI.IUPIRegistration) {
+export function consumeUPI(service: UPI.IUPIRegistration) {
   upi = service({
-    name: 'autocomplete-haskell'
+    name: 'autocomplete-haskell',
   })
   disposables && disposables.add(upi)
   return upi
 }
 
-export function consumeCompBack (service: UPI.CompletionBackend.ICompletionBackend) {
+export function consumeCompBack(service: UPI.CompletionBackend.ICompletionBackend) {
   backend = service
   const mydisp = new CompositeDisposable()
   disposables && disposables.add(mydisp)
@@ -172,7 +172,7 @@ export function consumeCompBack (service: UPI.CompletionBackend.ICompletionBacke
     new Disposable(() => {
       backend = undefined
       disposables && disposables.remove(mydisp)
-    })
+    }),
   )
   return mydisp
 }

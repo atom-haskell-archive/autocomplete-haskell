@@ -1,5 +1,5 @@
-import {Range} from 'atom'
-import {filter} from 'fuzzaldrin'
+import { Range } from 'atom'
+import { filter } from 'fuzzaldrin'
 import CB = UPI.CompletionBackend
 
 const typeScope = ['meta.type-signature.haskell']
@@ -11,17 +11,17 @@ const exportsScope = ['meta.import.haskell', 'meta.declaration.exports.haskell']
 
 const pragmaWords = [
   'LANGUAGE', 'OPTIONS_GHC', 'INCLUDE', 'WARNING', 'DEPRECATED', 'INLINE',
-  'NOINLINE', 'ANN', 'LINE', 'RULES', 'SPECIALIZE', 'UNPACK', 'SOURCE'
+  'NOINLINE', 'ANN', 'LINE', 'RULES', 'SPECIALIZE', 'UNPACK', 'SOURCE',
 ]
 
 const instancePragmaWords = [
   'INCOHERENT',
   'OVERLAPPABLE',
   'OVERLAPPING',
-  'OVERLAPS'
+  'OVERLAPS',
 ]
 
-import {operatorRx, identRx} from './opertator-regex'
+import { operatorRx, identRx } from './opertator-regex'
 
 export interface IOptions {
   editor: AtomTypes.TextEditor
@@ -45,21 +45,21 @@ export class SuggestionBuilder {
   private lineRange: AtomTypes.Range
   private line: string
   private mwl: number
-  constructor (private options: IOptions, private backend: CB.ICompletionBackend) {
+  constructor(private options: IOptions, private backend: CB.ICompletionBackend) {
     this.buffer = this.options.editor.getBuffer()
     this.lineRange = new Range(
       [this.options.bufferPosition.row, 0],
-      this.options.bufferPosition
+      this.options.bufferPosition,
     )
     this.line = this.buffer.getTextInRange(this.lineRange)
     this.mwl =
       this.options.activatedManually ?
         0
-      :
+        :
         atom.config.get('autocomplete-plus.minimumWordLength')
   }
 
-  public async getSuggestions (): Promise<ISuggestion[]> {
+  public async getSuggestions(): Promise<ISuggestion[]> {
     if (this.isIn(instancePreprocessorScope)) {
       return this.preprocessorSuggestions(instancePragmaWords)
     } else if (this.isIn(typeScope)) {
@@ -70,7 +70,7 @@ export class SuggestionBuilder {
       return this.symbolSuggestions(this.backend.getCompletionsForSymbolInModule.bind(this.backend))
     } else if (this.isIn(preprocessorScope)) {
       return this.preprocessorSuggestions(pragmaWords)
-    // should be last as least sepcialized
+      // should be last as least sepcialized
     } else if (this.isIn(sourceScope)) {
       if (this.getPrefix().startsWith('_')) {
         return this.symbolSuggestions(this.backend.getCompletionsForHole.bind(this.backend))
@@ -84,7 +84,7 @@ export class SuggestionBuilder {
     }
   }
 
-  private lineSearch (rx: RegExp, idx: number = 0) {
+  private lineSearch(rx: RegExp, idx: number = 0) {
     const match = this.line.match(rx)
     if (match) {
       return match
@@ -93,26 +93,26 @@ export class SuggestionBuilder {
     }
   }
 
-  private isIn (scope: string[]) {
+  private isIn(scope: string[]) {
     return scope.every((s1) => this.options.scopeDescriptor.getScopesArray().includes(s1))
   }
 
-  private getPrefix (rx?: RegExp) {
+  private getPrefix(rx?: RegExp) {
     if (!rx) { rx = identRx }
     return this.lineSearch(rx)[0]
   }
 
-  private buildSymbolSuggestion (s: CB.ISymbol, prefix: string): ISuggestion {
+  private buildSymbolSuggestion(s: CB.ISymbol, prefix: string): ISuggestion {
     return {
       text: s.qname ? s.qname : s.name,
       rightLabel: (s.module ? s.module.name : undefined),
       type: s.symbolType,
       replacementPrefix: prefix,
-      description: this.nameFix(s) + ' :: ' + s.typeSignature
+      description: this.nameFix(s) + ' :: ' + s.typeSignature,
     }
   }
 
-  private nameFix (s: CB.ISymbol) {
+  private nameFix(s: CB.ISymbol) {
     if (s.symbolType === 'operator') {
       return `(${s.name})`
     } else {
@@ -120,19 +120,19 @@ export class SuggestionBuilder {
     }
   }
 
-  private buildSimpleSuggestion (
-    type: 'import' | 'keyword', text: string, prefix: string, label?: string
+  private buildSimpleSuggestion(
+    type: 'import' | 'keyword', text: string, prefix: string, label?: string,
   ): ISuggestion {
     return {
       text,
       type,
       replacementPrefix: prefix,
-      rightLabel: label
+      rightLabel: label,
     }
   }
 
-  private async processSuggestions<T> (
-    f: GetSymbolsCallback<T>, rx: RegExp | undefined, p: (s: T, p: string) => ISuggestion
+  private async processSuggestions<T>(
+    f: GetSymbolsCallback<T>, rx: RegExp | undefined, p: (s: T, p: string) => ISuggestion,
   ) {
     const prefix = this.getPrefix(rx)
     if (prefix.length < this.mwl) {
@@ -142,16 +142,16 @@ export class SuggestionBuilder {
     return symbols.map((s) => p(s, prefix))
   }
 
-  private async symbolSuggestions (f: GetSymbolsCallback<CB.ISymbol>, rx?: RegExp) {
+  private async symbolSuggestions(f: GetSymbolsCallback<CB.ISymbol>, rx?: RegExp) {
     return this.processSuggestions(f, rx, this.buildSymbolSuggestion.bind(this))
   }
 
-  private async moduleSuggestions () {
+  private async moduleSuggestions() {
     return this.processSuggestions(this.backend.getCompletionsForModule.bind(this.backend), undefined, (s, prefix) =>
       this.buildSimpleSuggestion('import', s, prefix))
   }
 
-  private preprocessorSuggestions (pragmaList: string[]) {
+  private preprocessorSuggestions(pragmaList: string[]) {
     let f: GetSymbolsCallback<string>
     const kwrx = new RegExp(`\\b(${pragmaList.join('|')})\\b`)
     const kw = this.lineSearch(kwrx)[0]
@@ -179,7 +179,7 @@ export class SuggestionBuilder {
       this.buildSimpleSuggestion('keyword', s, prefix, label))
   }
 
-  private async operatorSuggestions () {
+  private async operatorSuggestions() {
     const prefixMatch = this.lineSearch(operatorRx)
     if (!prefixMatch) { return [] }
     const [mod, op] = prefixMatch.slice(1)
@@ -190,8 +190,8 @@ export class SuggestionBuilder {
       await this.backend.getCompletionsForSymbol(this.buffer, `${mod || ''}${op}`, this.options.bufferPosition)
     const newSyms =
       symbols
-      .filter(({symbolType}) => symbolType === 'operator')
-    const allSyms = filter(newSyms, prefixMatch[0], {key: 'qname'})
+        .filter(({ symbolType }) => symbolType === 'operator')
+    const allSyms = filter(newSyms, prefixMatch[0], { key: 'qname' })
     return allSyms.map((s) => this.buildSymbolSuggestion(s, prefixMatch[0]))
   }
 }

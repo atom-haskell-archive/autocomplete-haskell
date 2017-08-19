@@ -1,10 +1,10 @@
-import {CompositeDisposable} from 'atom'
+import { CompositeDisposable } from 'atom'
 import highlight = require('atom-highlight')
 
 export class LastSuggestionView {
   public element: HTMLElement
   private disposables: CompositeDisposable
-  constructor (text: string = '') {
+  constructor(text: string = '') {
     this.element = document.createElement('div')
     this.disposables = new CompositeDisposable()
     this.disposables.add(
@@ -13,22 +13,22 @@ export class LastSuggestionView {
       }),
       atom.config.observe('editor.fontSize', (val: number) => {
         this.element.style.fontSize = val ? `${val}px` : ''
-      })
+      }),
     )
     this.setText(text)
   }
 
-  public destroy () {
+  public destroy() {
     this.element.remove()
   }
 
-  public setText (text: string) {
+  public setText(text: string) {
     this.element.innerHTML = highlight({
       fileContents: text,
       scopeName: 'hint.haskell',
       nbsp: false,
       editorDiv: true,
-      editorDivTag: 'autocomplete-haskell-hint'
+      editorDivTag: 'autocomplete-haskell-hint',
     })
   }
 }
