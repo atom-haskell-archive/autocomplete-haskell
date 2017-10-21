@@ -4,7 +4,7 @@ import { LastSuggestionView } from './last-suggestion-view'
 
 let backend: UPI.CompletionBackend.ICompletionBackend | undefined
 let disposables: CompositeDisposable | undefined
-let panel: AtomTypes.Panel | undefined
+let panel: AtomTypes.Panel<LastSuggestionView> | undefined
 let upi: UPI.IUPIInstance | undefined
 let lastCompletionDesc: string | undefined
 
