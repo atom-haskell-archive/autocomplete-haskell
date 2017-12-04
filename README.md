@@ -1,4 +1,4 @@
-# autocomplete-haskell atom package
+# autocomplete-haskell atom package ![](https://david-dm.org/atom-haskell/autocomplete-haskell.svg)
 
 Autocomplete-haskell provides autocompletion facilities for your Haskell
 hacking.
