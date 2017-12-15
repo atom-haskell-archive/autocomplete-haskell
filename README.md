@@ -43,3 +43,18 @@ Import autocompletion:
 Hole autocompletion:
 
 ![hole](https://cloud.githubusercontent.com/assets/7275622/9704890/5581ccae-54bd-11e5-8ec6-8aa289e5a099.gif)
+
+# License
+
+Copyright © 2015 Atom-Haskell
+
+Contributors (by number of commits):
+
+<!-- BEGIN CONTRIBUTORS LIST -->
+* Nikolay Yakimov
+
+<!-- END CONTRIBUTORS LIST -->
+
+See the [LICENSE.md][LICENSE] for details.
+
+[LICENSE]: https://github.com/atom-haskell/autocomplete-haskell/blob/master/LICENSE.md
